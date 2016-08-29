@@ -17,6 +17,7 @@ int main(int argc,char** argv){
     char* key=0;
     char* value=0;
     char dist[max_buf];
+    dist[0]='\0';
     if(argc==2)
         key=argv[1];
     else if(argc==3){

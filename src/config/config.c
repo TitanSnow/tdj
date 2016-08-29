@@ -6,13 +6,15 @@ int tdj_get_config(int qid,const char* key,char* dist){
     FILE* fl;
     char* ln;
     const size_t max_buf=1024;
-    char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf];
+    char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf],home_path[max_buf];
     size_t i,len;
     const char* default_config[]={
         "judge_data_path","./judge_data","time_limit","1000",0
     };
     if(qid==0){
-        if((fl=fopen("~/.tdjconfig","r"))){
+        strcpy(home_path,getenv("HOME"));
+        strcat(home_path,"/.tdjconfig");
+        if((fl=fopen(home_path,"r"))){
             while(!feof(fl)){
                 if((ln=fgets(malloc(sizeof(char)*max_buf),max_buf,fl))){
                     len=strlen(ln);
