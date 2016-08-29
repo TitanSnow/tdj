@@ -42,8 +42,10 @@ int main(int argc,char** argv){
     }
     if(value){
     }else{
-        tdj_get_config(qid,key,dist);
-        puts(dist);
+        if(tdj_get_config(qid,key,dist)==-1)
+            puts("Error: undefined key");
+        else
+            puts(dist);
     }
     return 0;
 }
