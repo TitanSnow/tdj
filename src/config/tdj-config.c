@@ -41,6 +41,8 @@ int main(int argc,char** argv){
         return 0;
     }
     if(value){
+        if(tdj_set_config(qid,key,value)==-1)
+            puts("Error when setting config");
     }else{
         if(tdj_get_config(qid,key,dist)==-1)
             puts("Error: undefined key");
