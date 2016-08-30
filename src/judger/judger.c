@@ -48,6 +48,8 @@ int tdj_judge_aout(int qid,int did){
         if(tdj_get_config(qid,"time_limit",tl)==-1) goto error_exit;
         time_limit=atoi(tl);
         if(usleep(time_limit)==-1) goto error_exit;
+        if(waitpid(pid,&wstatus,WNOHANG)!=pid) goto error_exit;
+        if(!WIFEXITED(wstatus)||WEXITSTATUS(wstatus)!=0) return -1;
         return pipefd[0];
     }else{
         // child
