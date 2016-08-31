@@ -28,6 +28,10 @@ int main(int argc,char** argv){
             puts("Error: compile error");
             return 0;
         }
+        if(tdj_listen_SIGCHLD(0)==-1){
+            puts("Error: bind SIGCHLD handler error");
+            return 0;
+        }
         for(did=1;;++did){
             sprintf(fn,"%s/%d/%d.in",jp,qid,did);
             fl=fopen(fn,"r");

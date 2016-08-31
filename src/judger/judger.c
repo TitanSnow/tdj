@@ -2,6 +2,7 @@
 #include"../config/config.h"
 #include<stdio.h>
 #include<stdlib.h>
+#include<string.h>
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
@@ -72,8 +73,8 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         }
         time_limit=atoi(tl);
         if(usleep(time_limit)==-1){
-            if(pstatus)*pstatus=TDJ_USLEEPERROR;
-            goto error_exit;
+            // if(pstatus)*pstatus=TDJ_USLEEPERROR;
+            // goto error_exit;
         }
         if((t=waitpid(pid,&wstatus,WNOHANG))==0){
             if(pstatus)*pstatus=TDJ_STILLRUNNINGERROR;
@@ -107,4 +108,11 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         execlp(path,path,NULL);
         exit(-1);
     }
+}
+void tdj_void_sa_handler(int sig){}
+int tdj_listen_SIGCHLD(struct sigaction* oldact){
+    struct sigaction act;
+    memset(&act,0,sizeof(act));
+    act.sa_handler=tdj_void_sa_handler;
+    return sigaction(SIGCHLD,&act,oldact);
 }
