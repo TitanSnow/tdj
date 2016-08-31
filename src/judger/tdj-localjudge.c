@@ -5,12 +5,13 @@
 #include<stdlib.h>
 #include<string.h>
 #include<unistd.h>
+#include<errno.h>
+#include<fcntl.h>
 int main(int argc,char** argv){
-    int qid,did,jfd,cfd,r,status;
-    FILE* fl;
+    int qid,did,jfd,cfd,r,status,i,ofd,ifd;
     char *lang;
     const size_t max_buf=1024;
-    char jp[max_buf],fn[max_buf],cm[max_buf];
+    char jp[max_buf],fn[max_buf],cm[max_buf],outn[max_buf],bp[max_buf];
     if(argc!=3){
         puts("Usage: tdj-localjudge problem_id language");
     }else{
@@ -24,9 +25,22 @@ int main(int argc,char** argv){
             puts("Error: incorrect compare_method");
             return 0;
         }
-        if(tdj_compile(qid,0,lang,"a.out")==-1){
-            puts("Error: compile error");
+        if(tdj_get_config(qid,"judge_build_path",bp)==-1){
+            puts("Error: incorrect judge_build_path");
             return 0;
+        }
+        for(i=0;;++i){
+            sprintf(outn,"%s/%d.out",bp,i);
+            ofd=open(outn,O_RDONLY);
+            if(ofd==-1){
+                if(errno==ENOENT){
+                    if(tdj_compile(qid,0,lang,outn)==-1){
+                        puts("Error: compile error");
+                        return 0;
+                    }
+                    break;
+                }
+            }else close(ofd);
         }
         if(tdj_listen_SIGCHLD(0)==-1){
             puts("Error: bind SIGCHLD handler error");
@@ -34,17 +48,17 @@ int main(int argc,char** argv){
         }
         for(did=1;;++did){
             sprintf(fn,"%s/%d/%d.in",jp,qid,did);
-            fl=fopen(fn,"r");
-            if(!fl) break;
-            fclose(fl);
-            jfd=tdj_judge(qid,did,"./a.out",&status);
+            ifd=open(fn,O_RDONLY);
+            if(ifd==-1) break;
+            close(ifd);
+            jfd=tdj_judge(qid,did,outn,&status);
             if(jfd==-1){
                 printf("problem %d test %d : judge error %d\n",qid,did,status);
                 continue;
             }
             sprintf(fn,"%s/%d/%d.out",jp,qid,did);
-            fl=fopen(fn,"r");
-            if(!fl||(cfd=fileno(fl))==-1){
+            cfd=open(fn,O_RDONLY);
+            if(cfd==-1){
                 printf("problem %d test %d : no std output\n",qid,did);
                 continue;
             }
@@ -64,8 +78,9 @@ int main(int argc,char** argv){
                 printf("problem %d test %d : compare error",qid,did);
             }
             close(jfd);
-            fclose(fl);
+            close(cfd);
         }
+        unlink(outn);
     }
     return 0;
 }
