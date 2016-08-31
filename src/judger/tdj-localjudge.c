@@ -6,7 +6,7 @@
 #include<string.h>
 #include<unistd.h>
 int main(int argc,char** argv){
-    int qid,did,jfd,cfd,r;
+    int qid,did,jfd,cfd,r,status;
     FILE* fl;
     char *lang;
     const size_t max_buf=1024;
@@ -24,7 +24,7 @@ int main(int argc,char** argv){
             puts("Error: incorrect compare_method");
             return 0;
         }
-        if(tdj_compile(qid,0,lang)==-1){
+        if(tdj_compile(qid,0,lang,"a.out")==-1){
             puts("Error: compile error");
             return 0;
         }
@@ -33,9 +33,9 @@ int main(int argc,char** argv){
             fl=fopen(fn,"r");
             if(!fl) break;
             fclose(fl);
-            jfd=tdj_judge_aout(qid,did);
+            jfd=tdj_judge(qid,did,"./a.out",&status);
             if(jfd==-1){
-                printf("problem %d test %d : judge error\n",qid,did);
+                printf("problem %d test %d : judge error %d\n",qid,did,status);
                 continue;
             }
             sprintf(fn,"%s/%d/%d.out",jp,qid,did);
