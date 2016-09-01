@@ -16,4 +16,4 @@ Then make it
 	make
 
 ### For Windows
-You can try Cygwin
+Install Cygwin including gcc, make and git, then all things will go as same as Linux. 
