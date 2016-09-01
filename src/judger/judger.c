@@ -20,7 +20,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path){
         // child
         cp[0]='\0';
         if(tdj_get_config(qid,"compiler",cp)==-1) exit(-1);
-        dup2(fd,0);
+        if(dup2(fd,0)==-1) exit(-1);
         if(fd!=0)close(fd);
         execlp(cp,cp,"-x",lang,"-","-o",path,NULL);
         exit(-1);
@@ -96,14 +96,14 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         sprintf(fn,"%s/%d/%d.in",jp,qid,did);
         fd=open(fn,O_RDONLY);
         if(fd==-1) exit(-1);
-        dup2(fd,0);
+        if(dup2(fd,0)==-1) exit(-1);
         close(fd);
-        dup2(pipefd[1],1);
+        if(dup2(pipefd[1],1)==-1) exit(-1);
         close(pipefd[1]);
         close(pipefd[0]);
         fd=open("/dev/null",O_WRONLY);
         if(fd==-1) exit(-1);
-        dup2(fd,2);
+        if(dup2(fd,2)==-1) exit(-1);
         close(fd);
         execlp(path,path,NULL);
         exit(-1);
