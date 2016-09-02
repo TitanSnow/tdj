@@ -11,7 +11,9 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path){
     const size_t max_buf=1024;
     char cp[max_buf];
     int wstatus;
-    if((pid=fork())){
+    pid=fork();
+    if(pid==-1) return -1;
+    if(pid){
         // parent
         waitpid(pid,&wstatus,0);
         if(WIFEXITED(wstatus)&&WEXITSTATUS(wstatus)==0) return 0;
@@ -42,7 +44,12 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         if(pstatus)*pstatus=TDJ_PIPEGETTINGERROR;
         return -1;
     }
-    if((pid=fork())){
+    pid=fork();
+    if(pid==-1){
+        if(pstatus)*pstatus=TDJ_FORKERROR;
+        return -1;
+    }
+    if(pid){
         // parent
         goto normal_run;
         error_exit:;
