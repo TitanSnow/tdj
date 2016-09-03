@@ -14,6 +14,8 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     int pipefd[2];
     if(pipe(pipefd)==-1) return -1;
     if(pcpfd!=0)*pcpfd=pipefd[0];
+    else
+        close(pipefd[0]);
     pid=fork();
     if(pid==-1) return -1;
     if(pid){
