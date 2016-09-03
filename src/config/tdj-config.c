@@ -8,8 +8,8 @@ int isNum(const char* s){
         if(!isdigit(s[i])) return 0;
     return 1;
 }
-void error_usage(){
-    puts("Usage: tdj-config [problem id] key [value]");
+void error_usage(const char* pn){
+    printf("Usage: %s [problem id] key [value]\n",pn);
 }
 int main(int argc,char** argv){
     const size_t max_buf=1024;
@@ -30,14 +30,14 @@ int main(int argc,char** argv){
         }
     }else if(argc==4){
         if(!isNum(argv[1])){
-            error_usage();
+            error_usage(argv[0]);
             return 0;
         }
         qid=atoi(argv[1]);
         key=argv[2];
         value=argv[3];
     }else{
-        error_usage();
+        error_usage(argv[0]);
         return 0;
     }
     if(value){
