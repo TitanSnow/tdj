@@ -1,5 +1,5 @@
 opt=-Wall -g
-all: bin/tdj-config bin/tdj-localjudge
+all: bin/tdj-config bin/tdj-localjudge bin/tdj-server
 bin/tdj-config: build/tdj-config.o build/config.o
 	cc build/tdj-config.o build/config.o -o bin/tdj-config $(opt)
 build/tdj-config.o: src/config/tdj-config.c src/config/config.h
@@ -18,6 +18,11 @@ build/compare.o: src/judger/compare.c src/judger/compare.h
 
 build/time.o: src/time/time.c src/time/time.h
 	cc -c src/time/time.c -o build/time.o $(opt)
+
+bin/tdj-server: build/tdj-server.o build/config.o build/judger.o build/time.o build/compare.o
+	cc build/tdj-server.o build/config.o build/judger.o build/time.o build/compare.o -o bin/tdj-server $(opt)
+build/tdj-server.o: src/server/tdj-server.c src/server/server_def.h src/judger/judger.h src/judger/compare.h src/time/time.h src/config/config.h
+	cc -c src/server/tdj-server.c -o build/tdj-server.o $(opt)
 
 clean:
 	-rm build/*.o
