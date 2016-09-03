@@ -1,7 +1,7 @@
 #include<signal.h>
 #ifndef TDJ_JUDGER_H
 #define TDJ_JUDGER_H
-int tdj_compile(int qid,int fd,const char* lang,const char* path);
+int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd);
 int tdj_judge(int qid,int did,const char* path,int *pstatus);
 int tdj_listen_SIGCHLD(struct sigaction* oldact);
 #define TDJ_JUDGESUCCESS 0

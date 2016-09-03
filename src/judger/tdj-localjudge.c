@@ -21,8 +21,11 @@ int main(int argc,char** argv){
     const size_t max_buf=1024;
     char jp[max_buf],fn[max_buf],cm[max_buf],outn[max_buf],bp[max_buf];
     tdj_usec_t tm;
+    int cpfd;
+    FILE* cpfl;
+    int ch;
     if(argc!=3){
-        puts("Usage: tdj-localjudge problem_id language");
+        printf("Usage: %s problem_id language\n",argv[0]);
     }else{
         qid=atoi(argv[1]);
         lang=argv[2];
@@ -43,10 +46,21 @@ int main(int argc,char** argv){
             ofd=open(outn,O_RDONLY);
             if(ofd==-1){
                 if(errno==ENOENT){
-                    if(tdj_compile(qid,0,lang,outn)==-1){
+                    cpfd=-1;
+                    if(tdj_compile(qid,0,lang,outn,&cpfd)==-1){
+                        if(cpfd!=-1){
+                            cpfl=fdopen(cpfd,"r");
+                            while((ch=fgetc(cpfl))!=EOF)
+                                putchar(ch);
+                            fclose(cpfl);
+                        }
                         puts("Error: compile error");
                         return 0;
                     }
+                    cpfl=fdopen(cpfd,"r");
+                    while((ch=fgetc(cpfl))!=EOF)
+                        putchar(ch);
+                    fclose(cpfl);
                     break;
                 }
             }else close(ofd);

@@ -6,24 +6,34 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
-int tdj_compile(int qid,int fd,const char* lang,const char* path){
+int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const size_t max_buf=1024;
     char cp[max_buf];
     int wstatus;
+    int pipefd[2];
+    if(pipe(pipefd)==-1) return -1;
+    if(pcpfd!=0)*pcpfd=pipefd[0];
     pid=fork();
     if(pid==-1) return -1;
     if(pid){
         // parent
+        close(pipefd[1]);
         waitpid(pid,&wstatus,0);
-        if(WIFEXITED(wstatus)&&WEXITSTATUS(wstatus)==0) return 0;
-        else return -1;
+        if(WIFEXITED(wstatus)&&WEXITSTATUS(wstatus)==0)
+            return 0;
+        else
+            return -1;
     }else{
         // child
         cp[0]='\0';
         if(tdj_get_config(qid,"compiler",cp)==-1) exit(-1);
         if(dup2(fd,0)==-1) exit(-1);
         if(fd!=0)close(fd);
+        close(pipefd[0]);
+        if(dup2(pipefd[1],1)==-1) exit(-1);
+        if(dup2(pipefd[1],2)==-1) exit(-1);
+        close(pipefd[1]);
         execlp(cp,cp,"-x",lang,"-","-o",path,NULL);
         exit(-1);
     }
