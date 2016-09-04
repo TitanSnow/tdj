@@ -41,38 +41,35 @@ int get_localsock(int* pport){
     return sock;
 }
 void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_usec_t tm){
-    char data[sizeof(int32_t)*4+sizeof(tdj_usec_t)];
+    char data[sizeof(int32_t)*5+sizeof(tdj_usec_t)];
     int32_t* pdata=(int32_t*)data;
     *pdata++=ver==0?TDJ_VERSION:ver;
+    *pdata++=(int32_t)getpid();
     *pdata++=jid;
     *pdata++=mstat;
     *pdata++=jstat;
     *(tdj_usec_t*)(pdata++)=tm;
     if(tm!=0)
-        write(fd,data,sizeof(int32_t)*4+sizeof(tdj_usec_t));
+        write(fd,data,sizeof(int32_t)*5+sizeof(tdj_usec_t));
     else
-        write(fd,data,sizeof(int32_t)*4);
+        write(fd,data,sizeof(int32_t)*5);
 }
 int main(int argc,char** argv){
-    int ssock,csock;
+    int ssock,csock,lsock;
+    int ofd,cfd,jfd,ifd;
+    int i,did,status,r;
+    int lport;
     struct sockaddr_in saddr,caddr;
+    socklen_t caddr_sz;
     const size_t max_buf=1024;
     char sz_backlog[max_buf];
-    socklen_t caddr_sz;
-    pid_t pid;
-    struct sigaction sa;
-    int32_t se;
-    ssize_t recv_len,recv_cnt;
-    int32_t qid;
     const char* lang;
     char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf];
-    int ofd,cfd,jfd,ifd;
-    int i,did;
+    pid_t pid;
+    struct sigaction sa;
+    ssize_t recv_len,recv_cnt;
+    int32_t se,qid,jid=1;
     tdj_usec_t tm;
-    int status,r;
-    int lsock;
-    int32_t jid=1;
-    int lport;
 
     memset(&saddr,0,sizeof(saddr));
     saddr.sin_family=AF_INET;
