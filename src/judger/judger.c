@@ -14,14 +14,13 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     int pipefd[2];
     if(pipe(pipefd)==-1) return -1;
     if(pcpfd!=0)*pcpfd=pipefd[0];
-    else
-        close(pipefd[0]);
     pid=fork();
     if(pid==-1) return -1;
     if(pid){
         // parent
         close(pipefd[1]);
         waitpid(pid,&wstatus,0);
+        if(pcpfd==0)close(pipefd[0]);
         if(WIFEXITED(wstatus)&&WEXITSTATUS(wstatus)==0)
             return 0;
         else

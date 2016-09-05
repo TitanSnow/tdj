@@ -162,7 +162,7 @@ int main(int argc,char** argv){
         }
         if(se!=TDJ_VERSION)
             goto error_exit;
-        
+        recv_len=0;
         while(recv_len<sizeof(se)){
             recv_cnt=read(csock,((char*)&se)+recv_len,sizeof(se)-recv_len);
             if(recv_cnt==-1)
@@ -170,7 +170,7 @@ int main(int argc,char** argv){
             recv_len+=recv_cnt;
         }
         qid=se;
-
+        recv_len=0;
         while(recv_len<sizeof(se)){
             recv_cnt=read(csock,((char*)&se)+recv_len,sizeof(se)-recv_len);
             if(recv_cnt==-1)
