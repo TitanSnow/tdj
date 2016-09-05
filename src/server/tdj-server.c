@@ -44,7 +44,7 @@ void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_use
     char data[sizeof(int32_t)*5+sizeof(tdj_usec_t)];
     int32_t* pdata=(int32_t*)data;
     *pdata++=ver==0?TDJ_VERSION:ver;
-    *pdata++=(int32_t)getpid();
+    *pdata++=(int32_t)getppid();
     *pdata++=jid;
     *pdata++=mstat;
     *pdata++=jstat;
