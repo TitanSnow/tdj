@@ -174,6 +174,7 @@ int main(int argc,char** argv){
     ssize_t r;
     int32_t rb[5];
     tdj_usec_t tm;
+    int did=0;
 
     if(argc==4){
         fn=argv[1];
@@ -242,14 +243,14 @@ int main(int argc,char** argv){
     sock=dup(sock);
     fclose(sfl);
     shutdown(sock,SHUT_WR);
-    printf("%12s%12s%12s%12s\n","PID","JID","STATUS","TIME(USEC)");
+    printf("%3s%12s%12s%12s%12s\n","DID","PID","JID","STATUS","TIME(USEC)");
     while((r=read_count(sock,(char*)rb,sizeof(int32_t)*5))==0){
         if(rb[0]!=TDJ_VERSION){
             close(sock);
             puts("Error: server version is different from client");
             return EXIT_FAILURE;
         }
-        printf("%12d%12d",rb[1],rb[2]);
+        printf("%3d%12d%12d",++did,rb[1],rb[2]);
         switch(rb[3]){
             case TDJ_AC:case TDJ_WA:case TDJ_JE:
                 read_count(sock,(char*)&tm,sizeof(tm));
