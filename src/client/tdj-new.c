@@ -3,7 +3,7 @@
 int main(int argc,char** argv){
     FILE* fl;
     if(argc!=3){
-        printf("Usage: %s Server_IP Server_port",argv[0]);
+        printf("Usage: %s server_IP server_port\n",argv[0]);
         return EXIT_FAILURE;
     }
     fl=fopen(".tdj","w");
