@@ -17,7 +17,8 @@ int main(int argc,char** argv){
     int sock;
     struct sockaddr_in addr;
     int so_brd=1;
-    char buf[sizeof(int32_t)*2],pt[max_buf];
+    int32_t buf[2];
+    char pt[max_buf];
     int port=-1;
     memset(&addr,0,sizeof(addr));
     addr.sin_family=AF_INET;
@@ -59,6 +60,6 @@ int main(int argc,char** argv){
     buf[1]=port;
     while(1){
         write(sock,buf,sizeof(int32_t)*2);
-        usleep(333333);
+        usleep(200000);
     }
 }
