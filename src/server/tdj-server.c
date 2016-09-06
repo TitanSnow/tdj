@@ -140,6 +140,7 @@ int main(int argc,char** argv){
             // parent
             close(csock);
             if(++jid<=0) jid=1;
+            usleep(100000);
             continue;
         }
         // child
