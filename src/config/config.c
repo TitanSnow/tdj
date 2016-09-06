@@ -6,9 +6,8 @@
 #include<errno.h>
 int tdj_get_config(int qid,const char* key,char* dist){
     FILE* fl;
-    char* ln;
     const size_t max_buf=1024;
-    char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf],home_path[max_buf];
+    char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf],home_path[max_buf],ln[max_buf];
     size_t i,len;
     const char* default_config[]={
         "judge_data_path","./judge_data","time_limit","1000000","compiler","gcc","compare_method","lesser","judge_build_path","./judge_build","backlog","64",0
@@ -18,7 +17,7 @@ int tdj_get_config(int qid,const char* key,char* dist){
         strcat(home_path,"/.tdjconfig");
         if((fl=fopen(home_path,"r"))){
             while(!feof(fl)){
-                if((ln=fgets(malloc(sizeof(char)*max_buf),max_buf,fl))){
+                if((fgets(ln,max_buf,fl))){
                     len=strlen(ln);
                     for(i=0;i<len;++i){
                         if(ln[i]==' '){
@@ -36,8 +35,6 @@ int tdj_get_config(int qid,const char* key,char* dist){
                             strcpy(tk+i+1,tk+i+2);
                             --len;
                         }
-                    free(ln);
-                    ln=0;
                     if(!strcmp(tk,key)){
                         len=strlen(tv);
                         for(i=0;i<len;++i)
@@ -67,7 +64,7 @@ int tdj_get_config(int qid,const char* key,char* dist){
         sprintf(ttt,"%s%d/.tdjconfig",tt,qid);
         if((fl=fopen(ttt,"r"))){
             while(!feof(fl)){
-                if((ln=fgets(malloc(sizeof(char)*max_buf),max_buf,fl))){
+                if((fgets(ln,max_buf,fl))){
                     len=strlen(ln);
                     for(i=0;i<len;++i){
                         if(ln[i]==' '){
@@ -85,8 +82,6 @@ int tdj_get_config(int qid,const char* key,char* dist){
                             strcpy(tk+i+1,tk+i+2);
                             --len;
                         }
-                    free(ln);
-                    ln=0;
                     if(!strcmp(tk,key)){
                         len=strlen(tv);
                         for(i=0;i<len;++i)
