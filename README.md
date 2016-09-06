@@ -16,4 +16,4 @@ Then make it
 	make
 
 ### For Windows
-Install Cygwin including gcc, make and git, then all things will go as same as Linux. 
+Install Cygwin including gcc, g++, make and git, then all things will go as same as Linux. 
