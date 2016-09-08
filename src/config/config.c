@@ -10,7 +10,7 @@ int tdj_get_config(int qid,const char* key,char* dist){
     char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf],home_path[max_buf],ln[max_buf];
     size_t i,len;
     const char* default_config[]={
-        "judge_data_path","./judge_data","time_limit","1000000","compiler","g++","compare_method","lesser","judge_build_path","./judge_build","backlog","64",0
+        "judge_data_path","./judge_data","time_limit","1000000","compiler","g++","compare_method","lesser","judge_build_path","./judge_build","backlog","64","server_wait_time","100000",0
     };
     if(qid==0){
         strcpy(home_path,getenv("HOME"));

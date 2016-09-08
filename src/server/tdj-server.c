@@ -57,14 +57,14 @@ void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_use
 int main(int argc,char** argv){
     int ssock,csock,lsock;
     int ofd,cfd,jfd,ifd;
-    int i,did,status,r;
+    int i,did,status,r,wait_time;
     int lport;
     struct sockaddr_in saddr,caddr;
     socklen_t caddr_sz;
     const size_t max_buf=1024;
     char sz_backlog[max_buf];
     const char* lang;
-    char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf];
+    char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf],wt[max_buf];
     pid_t pid;
     struct sigaction sa;
     ssize_t recv_len,recv_cnt;
@@ -96,11 +96,17 @@ int main(int argc,char** argv){
         printf("Usage: %s [IP] port",argv[0]);
         error_handling("");
     }
+
+    if(tdj_get_config(0,"server_wait_time",wt)==-1)
+        error_handling("Error: get config \"server_wait_time\" error");
+    wait_time=atoi(wt);
     
     if((ssock=socket(PF_INET,SOCK_STREAM,0))==-1)
         error_handling("Error: socket() error");
-    if(bind(ssock,(struct sockaddr*)&saddr,sizeof(saddr))==-1)
+    if(bind(ssock,(struct sockaddr*)&saddr,sizeof(saddr))==-1){
+        close(ssock);
         error_handling("Error: bind() error");
+    }
     
     if(tdj_get_config(0,"backlog",sz_backlog)==-1){
         close(ssock);
@@ -140,7 +146,7 @@ int main(int argc,char** argv){
             // parent
             close(csock);
             if(++jid<=0) jid=1;
-            usleep(100000);
+            usleep(wait_time);
             continue;
         }
         // child
@@ -252,6 +258,7 @@ int main(int argc,char** argv){
         unlink(outn);
         
         close(csock);
+        close(lsock);
         return EXIT_SUCCESS;
     }
 }
