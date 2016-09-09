@@ -54,6 +54,16 @@ void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_use
     else
         write(fd,data,sizeof(int32_t)*5);
 }
+ssize_t read_count(int sock,char* buf,size_t cnt){
+    ssize_t str_len,now_len=0;
+    while(now_len<cnt){
+        str_len=read(sock,buf+now_len,cnt-now_len);
+        if(str_len==-1) return -1;
+        else if(str_len==0) return now_len==0?-2:now_len;
+        now_len+=str_len;
+    }
+    return 0;
+}
 int main(int argc,char** argv){
     int ssock,csock,lsock;
     int ofd,cfd,jfd,ifd;
@@ -67,7 +77,6 @@ int main(int argc,char** argv){
     char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf],wt[max_buf];
     pid_t pid;
     struct sigaction sa;
-    ssize_t recv_len,recv_cnt;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
 
@@ -160,30 +169,12 @@ int main(int argc,char** argv){
         }
         normal_run:;
         close(ssock);
-        recv_len=0;
-        while(recv_len<sizeof(se)){
-            recv_cnt=read(csock,((char*)&se)+recv_len,sizeof(se)-recv_len);
-            if(recv_cnt==-1)
-                goto error_exit;
-            recv_len+=recv_cnt;
-        }
+        if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         if(se!=TDJ_VERSION)
             goto error_exit;
-        recv_len=0;
-        while(recv_len<sizeof(se)){
-            recv_cnt=read(csock,((char*)&se)+recv_len,sizeof(se)-recv_len);
-            if(recv_cnt==-1)
-                goto error_exit;
-            recv_len+=recv_cnt;
-        }
+        if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         qid=se;
-        recv_len=0;
-        while(recv_len<sizeof(se)){
-            recv_cnt=read(csock,((char*)&se)+recv_len,sizeof(se)-recv_len);
-            if(recv_cnt==-1)
-                goto error_exit;
-            recv_len+=recv_cnt;
-        }
+        if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         if(se==TDJ_C)
             lang="c";
         else if(se==TDJ_CPP)
