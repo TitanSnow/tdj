@@ -12,4 +12,8 @@ int tdj_listen_SIGCHLD(struct sigaction* oldact);
 #define TDJ_EXITERROR 5
 #define TDJ_WAITERROR 6
 #define TDJ_FORKERROR 7
+#define TDJ_JUDGEDATAPATHERROR 8
+#define TDJ_NOSTDIN 9
+#define TDJ_OPENNULLERROR 10
+#define TDJ_DUPERROR 11
 #endif

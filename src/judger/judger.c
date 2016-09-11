@@ -6,6 +6,50 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
+int stdi,stdo,stde;
+int reopen_inout(int in,int out,int err){
+    if((stdi=dup(0))==-1) return -1;
+    if((stdo=dup(1))==-1){
+        close(stdi);
+        return -1;
+    }
+    if((stde=dup(2))==-1){
+        close(stdi);
+        close(stdo);
+        return -1;
+    }
+    if(dup2(in,0)==-1){
+        close(stdi);
+        close(stdo);
+        close(stde);
+        return -1;
+    }
+    if(dup2(out,1)==-1){
+        dup2(stdi,0);
+        close(stdi);
+        close(stdo);
+        close(stde);
+        return -1;
+    }
+    if(dup2(err,2)==-1){
+        dup2(stdi,0);
+        dup2(stdo,1);
+        close(stdi);
+        close(stdo);
+        close(stde);
+        return -1;
+    }
+    return 0;
+}
+int restore_inout(){
+    if(dup2(stdi,0)==-1) return -1;
+    close(stdi);
+    if(dup2(stdo,1)==-1) return -1;
+    close(stdo);
+    if(dup2(stde,2)==-1) return -1;
+    close(stde);
+    return 0;
+}
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const size_t max_buf=1024;
@@ -14,11 +58,15 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     int pipefd[2];
     if(pipe(pipefd)==-1) return -1;
     if(pcpfd!=0)*pcpfd=pipefd[0];
-    pid=fork();
-    if(pid==-1) return -1;
+    cp[0]='\0';
+    if(tdj_get_config(qid,"compiler",cp)==-1) return -1;
+    if(reopen_inout(fd,pipefd[1],pipefd[1])==-1) return -1;
+    close(pipefd[1]);
+    pid=vfork();
+    if(pid==-1){restore_inout();return -1;}
     if(pid){
         // parent
-        close(pipefd[1]);
+        restore_inout();
         waitpid(pid,&wstatus,0);
         if(pcpfd==0)close(pipefd[0]);
         if(WIFEXITED(wstatus)&&WEXITSTATUS(wstatus)==0)
@@ -27,16 +75,8 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
             return -1;
     }else{
         // child
-        cp[0]='\0';
-        if(tdj_get_config(qid,"compiler",cp)==-1) exit(-1);
-        if(dup2(fd,0)==-1) exit(-1);
-        if(fd!=0)close(fd);
-        close(pipefd[0]);
-        if(dup2(pipefd[1],1)==-1) exit(-1);
-        if(dup2(pipefd[1],2)==-1) exit(-1);
-        close(pipefd[1]);
         execlp(cp,cp,"-x",lang,"-","-o",path,NULL);
-        exit(-1);
+        _exit(-1);
     }
 }
 int tdj_judge(int qid,int did,const char* path,int *pstatus){
@@ -44,7 +84,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
     const size_t max_buf=1024;
     char fn[max_buf],jp[max_buf],tl[max_buf],pp[max_buf];
     int pipefd[2];
-    int fd;
+    int fd,fd2;
     int wstatus;
     int time_limit;
     int t;
@@ -55,9 +95,45 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         if(pstatus)*pstatus=TDJ_PIPEGETTINGERROR;
         return -1;
     }
-    pid=fork();
+    jp[0]='\0';
+    if(tdj_get_config(qid,"judge_data_path",jp)==-1){
+        if(pstatus)*pstatus=TDJ_JUDGEDATAPATHERROR;
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return -1;
+    }
+    sprintf(fn,"%s/%d/%d.in",jp,qid,did);
+    fd=open(fn,O_RDONLY);
+    if(fd==-1){
+        if(pstatus)*pstatus=TDJ_NOSTDIN;
+        close(pipefd[0]);
+        close(pipefd[1]);
+        return -1;
+    }
+    fd2=open("/dev/null",O_WRONLY);
+    if(fd2==-1){
+        if(pstatus)*pstatus=TDJ_OPENNULLERROR;
+        close(pipefd[0]);
+        close(pipefd[1]);
+        close(fd);
+        return -1;
+    }
+    if(reopen_inout(fd,pipefd[1],fd2)==-1){
+        if(pstatus)*pstatus=TDJ_DUPERROR;
+        close(fd);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        close(fd2);
+        return -1;
+    }
+    close(fd);
+    close(pipefd[1]);
+    close(fd2);
+    pid=vfork();
     if(pid==-1){
         if(pstatus)*pstatus=TDJ_FORKERROR;
+        restore_inout();
+        close(pipefd[0]);
         return -1;
     }
     if(pid){
@@ -65,6 +141,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         goto normal_run;
         error_exit:;
         {
+            close(pipefd[0]);
             sprintf(pp,"/proc/%d/stat",pid);
             pf=fopen(pp,"r");
             if(!pf) return -1;
@@ -83,7 +160,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
             }
         }
         normal_run:;
-        close(pipefd[1]);
+        restore_inout();
         tl[0]='\0';
         if(tdj_get_config(qid,"time_limit",tl)==-1){
             if(pstatus)*pstatus=TDJ_TIMELIMITGETTINGERROR;
@@ -104,27 +181,14 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         }
         if(!WIFEXITED(wstatus)||WEXITSTATUS(wstatus)!=0){
             if(pstatus)*pstatus=TDJ_EXITERROR;
+            close(pipefd[0]);
             return -1;
         }
         return pipefd[0];
     }else{
         // child
-        jp[0]='\0';
-        if(tdj_get_config(qid,"judge_data_path",jp)==-1) exit(-1);
-        sprintf(fn,"%s/%d/%d.in",jp,qid,did);
-        fd=open(fn,O_RDONLY);
-        if(fd==-1) exit(-1);
-        if(dup2(fd,0)==-1) exit(-1);
-        close(fd);
-        if(dup2(pipefd[1],1)==-1) exit(-1);
-        close(pipefd[1]);
-        close(pipefd[0]);
-        fd=open("/dev/null",O_WRONLY);
-        if(fd==-1) exit(-1);
-        if(dup2(fd,2)==-1) exit(-1);
-        close(fd);
         execlp(path,path,NULL);
-        exit(-1);
+        _exit(-1);
     }
 }
 void tdj_void_sa_handler(int sig){}
