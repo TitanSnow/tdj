@@ -155,7 +155,7 @@ int main(int argc,char** argv){
             // parent
             close(csock);
             if(++jid<=0) jid=1;
-            usleep(wait_time);
+            if(wait_time)usleep(wait_time);
             continue;
         }
         // child
