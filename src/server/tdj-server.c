@@ -202,8 +202,10 @@ int main(int argc,char** argv){
                 }
             }else close(ofd);
         }
-        if(tdj_listen_SIGCHLD(0)==-1)
+        if(tdj_listen_SIGCHLD(0)==-1){
+            unlink(outn);
             goto error_exit;
+        }
         for(did=1;;++did){
             sprintf(fn,"%s/%d/%d.in",jp,qid,did);
             ifd=open(fn,O_RDONLY);
