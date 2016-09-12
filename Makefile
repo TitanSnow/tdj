@@ -1,5 +1,5 @@
 opt=-Wall -O2
-all: bin/tdj-config bin/tdj-localjudge bin/tdj-server bin/tdj-broadcast bin/tdj-new bin/tdj-push bin/tdj-listener
+all: bin/tdj-config bin/tdj-server bin/tdj-broadcast bin/tdj-new bin/tdj-push bin/tdj-listener
 bin/tdj-config: build/tdj-config.o build/config.o
 	gcc build/tdj-config.o build/config.o -o bin/tdj-config $(opt)
 build/tdj-config.o: src/config/tdj-config.c src/config/config.h
@@ -39,12 +39,10 @@ bin/tdj-push: build/tdj-push.o build/time.o build/config.o
 build/tdj-push.o: src/client/tdj-push.c src/time/time.h src/config/config.h src/server/server_def.h src/judger/judger.h
 	gcc -c src/client/tdj-push.c -o build/tdj-push.o $(opt)
 
-bin/tdj-listener: build/tdj-listener.o build/config_cc.o
-	g++ build/tdj-listener.o build/config_cc.o -o bin/tdj-listener $(opt)
+bin/tdj-listener: build/tdj-listener.o build/config.o
+	g++ build/tdj-listener.o build/config.o -o bin/tdj-listener $(opt)
 build/tdj-listener.o: src/server/tdj-listener.cc src/server/server_def.h src/judger/judger.h src/config/config.h src/time/time.h
 	g++ -c src/server/tdj-listener.cc -o build/tdj-listener.o $(opt)
-build/config_cc.o: src/config/config.c src/config/config.h
-	g++ -c src/config/config.c -o build/config_cc.o $(opt)
 
 clean:
 	-rm build/*.o
