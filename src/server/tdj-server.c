@@ -79,6 +79,11 @@ int main(int argc,char** argv){
     struct sigaction sa;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
+#ifndef NO_COMPILER_OUTPUT
+    int cofd;
+    FILE* cofl;
+    int coch;
+#endif
 
     memset(&saddr,0,sizeof(saddr));
     saddr.sin_family=AF_INET;
@@ -187,20 +192,29 @@ int main(int argc,char** argv){
             goto error_exit;
         if(tdj_get_config(qid,"judge_build_path",bp)==-1)
             goto error_exit;
-        for(i=0;;++i){
+        for(i=0;i>=0;++i){
             sprintf(outn,"%s/%d.out",bp,i);
-            ofd=open(outn,O_RDONLY);
-            if(ofd==-1){
-                if(errno==ENOENT){
-                    if(tdj_compile(qid,csock,lang,outn,0)==-1){
-                        send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
-                        send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
-                        close(csock);
-                        return EXIT_FAILURE;
-                    }
-                    break;
+            ofd=open(outn,O_WRONLY|O_CREAT|O_EXCL);
+            if(ofd!=-1){
+                write(ofd,"1",1);
+                close(ofd);
+#ifdef NO_COMPILER_OUTPUT
+                if(tdj_compile(qid,csock,lang,outn,0)==-1){
+#else
+                if(tdj_compile(qid,csock,lang,outn,&cofd)==-1){
+#endif
+                    send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
+                    send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
+                    close(csock);
+#ifndef NO_COMPILER_OUTPUT
+                    cofl=fdopen(cofd,"r");
+                    while((coch=fgetc(cofl))!=EOF)
+                        putchar(coch);
+#endif
+                    return EXIT_FAILURE;
                 }
-            }else close(ofd);
+                break;
+            }
         }
         if(tdj_listen_SIGCHLD(0)==-1){
             unlink(outn);
