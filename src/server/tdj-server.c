@@ -170,6 +170,7 @@ int main(int argc,char** argv){
             send_mes(csock,0,jid,TDJ_OTHERROR,TDJ_JUDGESUCCESS,0);
             send_mes(lsock,0,jid,TDJ_OTHERROR,TDJ_JUDGESUCCESS,0);
             close(csock);
+            close(lsock);
             return EXIT_FAILURE;
         }
         normal_run:;
@@ -199,13 +200,15 @@ int main(int argc,char** argv){
                 write(ofd,"1",1);
                 close(ofd);
 #ifdef NO_COMPILER_OUTPUT
-                if(tdj_compile(qid,csock,lang,outn,0)==-1){
+                if(tdj_compile(qid,csock,lang,outn,0)==-1)
 #else
-                if(tdj_compile(qid,csock,lang,outn,&cofd)==-1){
+                if(tdj_compile(qid,csock,lang,outn,&cofd)==-1)
 #endif
+                {
                     send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
                     send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
                     close(csock);
+                    close(lsock);
 #ifndef NO_COMPILER_OUTPUT
                     cofl=fdopen(cofd,"r");
                     while((coch=fgetc(cofl))!=EOF)
