@@ -49,3 +49,6 @@ build/sqlite3.o: lib/sqlite/sqlite3.c
 
 clean:
 	-rm build/*.o
+prepare:
+	-mkdir build
+	-mkdir bin
