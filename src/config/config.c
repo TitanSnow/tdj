@@ -149,6 +149,7 @@ int tdj_set_config(int qid,const char* key,const char* value){
         if(r!=SQLITE_OK)
             return -1;
     }
+    result=0;
     select=sqlite3_mprintf(TDJ_SELECT,qid,key);
     r=sqlite3_get_table(db,select,&result,&nr,&nc,&errmsg);
     sqlite3_free_table(result);
