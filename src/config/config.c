@@ -1,228 +1,175 @@
 #include"config.h"
-#include<stdio.h>
+#include"../../lib/sqlite/sqlite3.h"
 #include<stdlib.h>
+#include<stdio.h>
 #include<string.h>
-#include<unistd.h>
-#include<errno.h>
-int tdj_get_config(int qid,const char* key,char* dist){
-    FILE* fl;
-    const size_t max_buf=1024;
-    char tk[max_buf],tv[max_buf],tt[max_buf],ttt[max_buf],home_path[max_buf],ln[max_buf];
-    size_t i,len;
+
+#define TDJ_DB_NAME ".tdjconfig.db"
+
+#define TDJ_EXISTS_TABLE \
+"select name from sqlite_master where " \
+"type='table' and name='%d' " \
+"limit 1"
+
+#define TDJ_SELECT \
+"select value from `%d` " \
+"where key=%Q limit 1"
+
+#define TDJ_CREATE_TABLE \
+"create table `%d` (key,value)"
+
+#define TDJ_INSERT \
+"insert into `%d` values (%Q,%Q)"
+
+#define TDJ_UPDATE \
+"update `%d` set value=%Q " \
+"where key=%Q"
+
+sqlite3* inizsql(){
+    static int c_req=0;
+    static sqlite3* db;
+    const size_t max_buf=256;
+    char dbp[max_buf];
+    if(c_req++==0){
+        sprintf(dbp,"%s/" TDJ_DB_NAME,getenv("HOME"));
+        if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
+    }
+    return db;
+}
+int make_sure_table_0(){
+    sqlite3* db=inizsql();
     const char* default_config[]={
         "judge_data_path","./judge_data","time_limit","1000000","compiler","g++","compare_method","lesser","judge_build_path","./judge_build","backlog","64","server_wait_time","0",0
     };
-    if(qid==0){
-        strcpy(home_path,getenv("HOME"));
-        strcat(home_path,"/.tdjconfig");
-        if((fl=fopen(home_path,"r"))){
-            while(!feof(fl)){
-                if((fgets(ln,max_buf,fl))){
-                    len=strlen(ln);
-                    for(i=0;i<len;++i){
-                        if(ln[i]==' '){
-                            if(i+1==len||ln[i+1]!=' '){
-                                break;
-                            }else ++i;
-                        }
-                    }
-                    ln[i]='\0';
-                    strcpy(tk,ln);
-                    strcpy(tv,i==len?ln+i:ln+i+1);
-                    len=strlen(tk);
-                    for(i=0;i<len;++i)
-                        if(tk[i]==' '&&tk[i+1]==' '){
-                            strcpy(tk+i+1,tk+i+2);
-                            --len;
-                        }
-                    if(!strcmp(tk,key)){
-                        len=strlen(tv);
-                        for(i=0;i<len;++i)
-                            if(tv[i]==' '&&tv[i+1]==' '){
-                                strcpy(tv+i+1,tv+i+2);
-                                --len;
-                            }
-                        tv[len-1]='\0';
-                        strcpy(dist,tv);
-                        return 0;
-                    }
-                }
-            }
-        }
-        for(i=0;default_config[i];++i)
-            if(i%2==0&&!strcmp(key,default_config[i])){
-                strcpy(dist,default_config[i+1]);
-                return 0;
-            }
-    }else{
-        tdj_get_config(0,"judge_data_path",tt);
-        len=strlen(tt);
-        if(tt[len-1]!='/'){
-            strcat(tt,"/");
-            ++len;
-        }
-        sprintf(ttt,"%s%d/.tdjconfig",tt,qid);
-        if((fl=fopen(ttt,"r"))){
-            while(!feof(fl)){
-                if((fgets(ln,max_buf,fl))){
-                    len=strlen(ln);
-                    for(i=0;i<len;++i){
-                        if(ln[i]==' '){
-                            if(i+1==len||ln[i+1]!=' '){
-                                break;
-                            }else ++i;
-                        }
-                    }
-                    ln[i]='\0';
-                    strcpy(tk,ln);
-                    strcpy(tv,i==len?ln+i:ln+i+1);
-                    len=strlen(tk);
-                    for(i=0;i<len;++i)
-                        if(tk[i]==' '&&tk[i+1]==' '){
-                            strcpy(tk+i+1,tk+i+2);
-                            --len;
-                        }
-                    if(!strcmp(tk,key)){
-                        len=strlen(tv);
-                        for(i=0;i<len;++i)
-                            if(tv[i]==' '&&tv[i+1]==' '){
-                                strcpy(tv+i+1,tv+i+2);
-                                --len;
-                            }
-                        tv[len-1]='\0';
-                        strcpy(dist,tv);
-                        return 0;
-                    }
-                }
-            }
-        }
-        return tdj_get_config(0,key,dist);
+    char **result=0;
+    int nr,nc,i;
+    char *errmsg;
+    char *exists_table=sqlite3_mprintf(TDJ_EXISTS_TABLE,0),*create_table,*insert;
+    if(sqlite3_get_table(db,exists_table,&result,&nr,&nc,&errmsg)!=SQLITE_OK){
+        sqlite3_free_table(result);
+        sqlite3_free(exists_table);
+        return -1;
     }
-    return -1;
-}
-int tdj_set_config(int qid,const char* key,const char* value){
-    const size_t max_buf=1024;
-    char fn[max_buf],t[max_buf],tk[max_buf],tt[max_buf],tv[max_buf];
-    FILE* fl,*tfl;
-    size_t len,i;
-    int ch;
-    fn[0]='\0';
-    if(qid==0){
-        strcpy(fn,getenv("HOME"));
-        strcat(fn,"/.tdjconfig");
-        if((fl=fopen(fn,"r"))&&(tfl=fopen(".tdj_set_config_temp","w"))){
-            while(!feof(fl)){
-                if(fgets(t,max_buf,fl)){
-                    len=strlen(t);
-                    for(i=0;i<len;++i)
-                        if(t[i]==' '){
-                            if(t[i+1]!=' ')
-                                break;
-                            else ++i;
-                        }
-                    t[i]='\0';
-                    strcpy(tk,t);
-                    if(i!=len) t[i]=' ';
-                    len=strlen(tk);
-                    for(i=0;i<len;++i)
-                        if(tk[i]==' '&&tk[i+1]==' '){
-                            strcpy(tk+i+1,tk+i+2);
-                            --len;
-                        }
-                    if(!!strcmp(key,tk)) fprintf(tfl,"%s",t);
-                }
-            }
-            if(!freopen(fn,"w",fl)) return -1;
-            if(!freopen(".tdj_set_config_temp","r",tfl)) return -1;
-            while((ch=fgetc(tfl))!=EOF)
-                fputc(ch,fl);
-            fclose(tfl);
-            unlink(".tdj_set_config_temp");
-            strcpy(tk,key);
-            len=strlen(tk);
-            for(i=0;i<len;++i)
-                if(tk[i]==' '){
-                    strcpy(tt,tk+i);
-                    strcpy(tk+i+1,tt);
-                    ++len;
-                }
-            strcpy(tv,value);
-            len=strlen(tv);
-            for(i=0;i<len;++i)
-                if(tv[i]==' '){
-                    strcpy(tt,tv+i);
-                    strcpy(tv+i+1,tt);
-                    ++len;
-                }
-            fprintf(fl,"%s %s\n",tk,tv);
-            fclose(fl);
-        }else{
-            if(errno==ENOENT){
-                if((fl=fopen(fn,"w"))){
-                    fclose(fl);
-                    return tdj_set_config(qid,key,value);
-                }
-            }
-            return -1;
-        }
-    }else{
-        tdj_get_config(0,"judge_data_path",fn);
-        sprintf(fn,"%s/%d/.tdjconfig",fn,qid);
-        if((fl=fopen(fn,"r"))&&(tfl=fopen(".tdj_set_config_temp","w"))){
-            while(!feof(fl)){
-                if(fgets(t,max_buf,fl)){
-                    len=strlen(t);
-                    for(i=0;i<len;++i)
-                        if(t[i]==' '){
-                            if(t[i+1]!=' ')
-                                break;
-                            else ++i;
-                        }
-                    t[i]='\0';
-                    strcpy(tk,t);
-                    if(i!=len) t[i]=' ';
-                    len=strlen(tk);
-                    for(i=0;i<len;++i)
-                        if(tk[i]==' '&&tk[i+1]==' '){
-                            strcpy(tk+i+1,tk+i+2);
-                            --len;
-                        }
-                    if(!!strcmp(key,tk)) fprintf(tfl,"%s",t);
-                }
-            }
-            if(!freopen(fn,"w",fl)) return -1;
-            if(!freopen(".tdj_set_config_temp","r",tfl)) return -1;
-            while((ch=fgetc(tfl))!=EOF)
-                fputc(ch,fl);
-            fclose(tfl);
-            unlink(".tdj_set_config_temp");
-            strcpy(tk,key);
-            len=strlen(tk);
-            for(i=0;i<len;++i)
-                if(tk[i]==' '){
-                    strcpy(tt,tk+i);
-                    strcpy(tk+i+1,tt);
-                    ++len;
-                }
-            strcpy(tv,value);
-            len=strlen(tv);
-            for(i=0;i<len;++i)
-                if(tv[i]==' '){
-                    strcpy(tt,tv+i);
-                    strcpy(tv+i+1,tt);
-                    ++len;
-                }
-            fprintf(fl,"%s %s\n",tk,tv);
-            fclose(fl);
-        }else{
-            if(errno==ENOENT){
-                if((fl=fopen(fn,"w"))){
-                    fclose(fl);
-                    return tdj_set_config(qid,key,value);
-                }
-            }
-            return -1;
-        }
+    sqlite3_free_table(result);
+    sqlite3_free(exists_table);
+    if(nr==1){
+        // has table '0'
+        return 0;
     }
+    // no table '0'
+    create_table=sqlite3_mprintf(TDJ_CREATE_TABLE,0);
+    if(sqlite3_exec(db,create_table,0,0,&errmsg)!=SQLITE_OK){
+        sqlite3_free(create_table);
+        return -1;
+    }
+    sqlite3_free(create_table);
+    // insert default
+    for(i=0;default_config[i]!=0;++i)
+        if(i%2==0){
+            insert=sqlite3_mprintf(TDJ_INSERT,0,default_config[i],default_config[i+1]);
+            if(sqlite3_exec(db,insert,0,0,&errmsg)!=SQLITE_OK){
+                sqlite3_free(insert);
+                return -1;
+            }
+            sqlite3_free(insert);
+        }
+    
     return 0;
 }
+int tdj_get_config(int qid,const char* key,char* dist){
+    sqlite3* db=inizsql();
+    char *exists_table=sqlite3_mprintf(TDJ_EXISTS_TABLE,qid),*select;
+    char **result=0;
+    int nr,nc;
+    char *errmsg;
+    if(sqlite3_get_table(db,exists_table,&result,&nr,&nc,&errmsg)!=SQLITE_OK){
+        sqlite3_free(exists_table);
+        sqlite3_free_table(result);
+        return -1;
+    }
+    sqlite3_free(exists_table);
+    sqlite3_free_table(result);
+    if(nr==1){
+        // has table 'qid'
+        result=0;
+        select=sqlite3_mprintf(TDJ_SELECT,qid,key);
+        if(sqlite3_get_table(db,select,&result,&nr,&nc,&errmsg)==SQLITE_OK){
+            sqlite3_free(select);
+            if(nr==1){
+                // has data
+                strcpy(dist,result[1]);
+                sqlite3_free_table(result);
+                return 0;
+            }
+            sqlite3_free_table(result);
+        }else{
+            sqlite3_free(select);
+            sqlite3_free_table(result);
+        }
+    }
+    // select from table '0'
+    if(make_sure_table_0()==-1) return -1;
+    result=0;
+    select=sqlite3_mprintf(TDJ_SELECT,0,key);
+    if(sqlite3_get_table(db,select,&result,&nr,&nc,&errmsg)==SQLITE_OK){
+        sqlite3_free(select);
+        if(nr==1){
+            // has data
+            strcpy(dist,result[1]);
+            sqlite3_free_table(result);
+            return 0;
+        }
+        sqlite3_free_table(result);
+    }else{
+        sqlite3_free(select);
+        sqlite3_free_table(result);
+    }
+    // No data found
+    return -1;
+}
+
+int tdj_set_config(int qid,const char* key,const char* value){
+    sqlite3* db=inizsql();
+    char *exists_table,*create_table,*select,*insert,*update;
+    char **result=0;
+    int nr,nc,r;
+    char *errmsg;
+    
+    exists_table=sqlite3_mprintf(TDJ_EXISTS_TABLE,qid);
+    r=sqlite3_get_table(db,exists_table,&result,&nr,&nc,&errmsg);
+    sqlite3_free(exists_table);
+    sqlite3_free_table(result);
+    if(r!=SQLITE_OK)
+        return -1;
+    if(nr==0){
+        // no table 'qid'
+        create_table=sqlite3_mprintf(TDJ_CREATE_TABLE,qid);
+        r=sqlite3_exec(db,create_table,0,0,&errmsg);
+        sqlite3_free(create_table);
+        if(r!=SQLITE_OK)
+            return -1;
+    }
+    select=sqlite3_mprintf(TDJ_SELECT,qid,key);
+    r=sqlite3_get_table(db,select,&result,&nr,&nc,&errmsg);
+    sqlite3_free_table(result);
+    sqlite3_free(select);
+    if(r!=SQLITE_OK)
+        return -1;
+    if(nr==0){
+        // insert it
+        insert=sqlite3_mprintf(TDJ_INSERT,qid,key,value);
+        r=sqlite3_exec(db,insert,0,0,&errmsg);
+        sqlite3_free(insert);
+        if(r!=SQLITE_OK)
+            return -1;
+        return 0;
+    }
+    // update it
+    update=sqlite3_mprintf(TDJ_UPDATE,qid,value,key);
+    r=sqlite3_exec(db,update,0,0,&errmsg);
+    sqlite3_free(update);
+    if(r!=SQLITE_OK)
+        return -1;
+    return 0;
+}
+
