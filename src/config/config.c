@@ -25,17 +25,7 @@
 "update `%d` set value=%Q " \
 "where key=%Q"
 
-sqlite3* inizsql(){
-    static int c_req=0;
-    static sqlite3* db;
-    const size_t max_buf=256;
-    char dbp[max_buf];
-    if(c_req++==0){
-        sprintf(dbp,"%s/" TDJ_DB_NAME,getenv("HOME"));
-        if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
-    }
-    return db;
-}
+sqlite3* inizsql();
 int make_sure_table_0(){
     sqlite3* db=inizsql();
     const char* default_config[]={
