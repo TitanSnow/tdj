@@ -57,3 +57,5 @@ clean:
 prepare:
 	-mkdir build
 	-mkdir bin
+install:
+	cp bin/* /usr/bin
