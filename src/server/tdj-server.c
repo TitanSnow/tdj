@@ -3,6 +3,8 @@
 #include"../time/time.h"
 #include"../judger/compare.h"
 #include"server_def.h"
+#include"../z/zpipe.h"
+#include"../../lib/zlib/zlib.h"
 #include<unistd.h>
 #include<fcntl.h>
 #include<stdio.h>
@@ -63,6 +65,22 @@ ssize_t read_count(int sock,char* buf,size_t cnt){
         now_len+=str_len;
     }
     return 0;
+}
+int infd(int fd){
+    FILE *s,*d;
+    int pipefd[2];
+    if(pipe(pipefd)==-1)
+        return -1;
+    s=fdopen(fd,"r");
+    d=fdopen(pipefd[1],"w");
+    if(inf(s,d)!=Z_OK){
+        fclose(d);
+        close(pipefd[0]);
+        return -1;
+    }
+    fflush(d);
+    fclose(d);
+    return pipefd[0];
 }
 int main(int argc,char** argv){
     int ssock,csock,lsock;
@@ -200,9 +218,9 @@ int main(int argc,char** argv){
                 write(ofd,"1",1);
                 close(ofd);
 #ifdef NO_COMPILER_OUTPUT
-                if(tdj_compile(qid,csock,lang,outn,0)==-1)
+                if(tdj_compile(qid,infd(csock),lang,outn,0)==-1)
 #else
-                if(tdj_compile(qid,csock,lang,outn,&cofd)==-1)
+                if(tdj_compile(qid,infd(csock),lang,outn,&cofd)==-1)
 #endif
                 {
                     send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);

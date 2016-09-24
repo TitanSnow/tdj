@@ -19,9 +19,9 @@ build/compare.o: src/judger/compare.c src/judger/compare.h
 build/time.o: src/time/time.c src/time/time.h
 	gcc -c src/time/time.c -o build/time.o $(opt)
 
-bin/tdj-server: build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o
-	g++ build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o -o bin/tdj-server $(opt)
-build/tdj-server.o: src/server/tdj-server.c src/server/server_def.h src/judger/judger.h src/judger/compare.h src/time/time.h src/config/config.h
+bin/tdj-server: build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a
+	g++ build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a -o bin/tdj-server $(opt)
+build/tdj-server.o: src/server/tdj-server.c src/server/server_def.h src/judger/judger.h src/judger/compare.h src/time/time.h src/config/config.h src/z/zpipe.h lib/zlib/zlib.h
 	gcc -c src/server/tdj-server.c -o build/tdj-server.o -DNO_COMPILER_OUTPUT $(opt)
 
 bin/tdj-broadcast: build/tdj-broadcast.o build/libconfig.a
@@ -34,9 +34,9 @@ bin/tdj-new: build/tdj-new.o
 build/tdj-new.o: src/client/tdj-new.c
 	gcc -c src/client/tdj-new.c -o build/tdj-new.o $(opt)
 
-bin/tdj-push: build/tdj-push.o build/time.o build/libconfig.a
-	g++ build/tdj-push.o build/time.o build/libconfig.a -o bin/tdj-push $(opt)
-build/tdj-push.o: src/client/tdj-push.c src/time/time.h src/config/config.h src/server/server_def.h src/judger/judger.h
+bin/tdj-push: build/tdj-push.o build/time.o build/libconfig.a build/libz.a
+	g++ build/tdj-push.o build/time.o build/libconfig.a build/libz.a -o bin/tdj-push $(opt)
+build/tdj-push.o: src/client/tdj-push.c src/time/time.h src/config/config.h src/server/server_def.h src/judger/judger.h src/z/zpipe.h lib/zlib/zlib.h
 	gcc -c src/client/tdj-push.c -o build/tdj-push.o $(opt)
 
 bin/tdj-listener: build/tdj-listener.o build/libconfig.a
@@ -51,6 +51,13 @@ build/sql.o: src/config/sql.cc lib/sqlite/sqlite3.h
 
 build/libconfig.a: build/config.o build/sql.o build/sqlite3.o
 	ar rc build/libconfig.a build/config.o build/sql.o build/sqlite3.o
+
+build/libz.a: lib/zlib/configure build/zpipe.o
+	cd lib/zlib;./configure --static;make libz.a;cd ../..
+	cp lib/zlib/libz.a build
+	ar r build/libz.a build/zpipe.o
+build/zpipe.o: src/z/zpipe.c lib/zlib/zlib.h
+	gcc -c src/z/zpipe.c -o build/zpipe.o -Ilib/zlib $(opt)
 
 clean:
 	-rm build/*

@@ -10,6 +10,8 @@
 #include"../time/time.h"
 #include"../server/server_def.h"
 #include"../judger/judger.h"
+#include"../z/zpipe.h"
+#include"../../lib/zlib/zlib.h"
 int read_addr(const char** ip,const char** pt){
     static char nip[128],npt[128];
     size_t max_buf=128;
@@ -164,13 +166,12 @@ int main(int argc,char** argv){
     const char* fn=0;
     const char* lg=0;
     const size_t max_buf=1024;
-    char ft[max_buf],qd[max_buf];
+    char ft[max_buf],qd[max_buf],cl[max_buf];
     int qid;
     const char* dot=0;
     FILE* fl,*sfl;
     int sock;
     int32_t frt[3];
-    int ch;
     ssize_t r;
     int32_t rb[5];
     tdj_usec_t tm;
@@ -236,8 +237,18 @@ int main(int argc,char** argv){
         return EXIT_FAILURE;
     }
     fwrite(frt,sizeof(int32_t),3,sfl);
-    while((ch=fgetc(fl))!=EOF)
-        fputc(ch,sfl);
+    if(tdj_get_config(qid,"compress_level",cl)==-1){
+        close(sock);
+        fclose(fl);
+        puts("Error: cannot get \"compress_level\"");
+        return EXIT_FAILURE;
+    }
+    if(def(fl,sfl,atoi(cl))!=Z_OK){
+        close(sock);
+        fclose(fl);
+        puts("Error: compress error");
+        return EXIT_FAILURE;
+    }
     fclose(fl);
     fflush(sfl);
     sock=dup(sock);
