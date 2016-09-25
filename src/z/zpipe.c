@@ -1,7 +1,22 @@
-/* zpipe.c: example of proper use of zlib's inflate() and deflate()
-   Not copyrighted -- provided to the public domain
-   Version 1.4  11 December 2005  Mark Adler */
-
+/*
+*
+*    zpipe.c: example of proper use of zlib's inflate() and deflate()
+*    Copyright (C) 2016  TitanSnow <sweeto@live.cn>
+*
+*    This program is free software: you can redistribute it and/or modify
+*    it under the terms of the GNU Affero General Public License as published
+*    by the Free Software Foundation, either version 3 of the License, or
+*    (at your option) any later version.
+*
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU Affero General Public License for more details.
+*
+*    You should have received a copy of the GNU Affero General Public License
+*    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/* Version 1.4  11 December 2005  Mark Adler */
 /* Version history:
    1.0  30 Oct 2004  First version
    1.1   8 Nov 2004  Add void casting for unused return values
@@ -10,6 +25,7 @@
    1.3   6 Apr 2005  Remove incorrect assertion in inf()
    1.4  11 Dec 2005  Add hack to avoid MSDOS end-of-line conversions
                      Avoid some compiler warnings for input and output buffers
+     -  25 Sep 2016  Remove "main" & "zerr" ( by TitanSnow )
  */
 
 #include <stdio.h>
@@ -146,60 +162,3 @@ int inf(FILE *source, FILE *dest)
     (void)inflateEnd(&strm);
     return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
 }
-
-// /* report a zlib or i/o error */
-// void zerr(int ret)
-// {
-//     fputs("zpipe: ", stderr);
-//     switch (ret) {
-//     case Z_ERRNO:
-//         if (ferror(stdin))
-//             fputs("error reading stdin\n", stderr);
-//         if (ferror(stdout))
-//             fputs("error writing stdout\n", stderr);
-//         break;
-//     case Z_STREAM_ERROR:
-//         fputs("invalid compression level\n", stderr);
-//         break;
-//     case Z_DATA_ERROR:
-//         fputs("invalid or incomplete deflate data\n", stderr);
-//         break;
-//     case Z_MEM_ERROR:
-//         fputs("out of memory\n", stderr);
-//         break;
-//     case Z_VERSION_ERROR:
-//         fputs("zlib version mismatch!\n", stderr);
-//     }
-// }
-
-// /* compress or decompress from stdin to stdout */
-// int main(int argc, char **argv)
-// {
-//     int ret;
-// 
-//     /* avoid end-of-line conversions */
-//     SET_BINARY_MODE(stdin);
-//     SET_BINARY_MODE(stdout);
-// 
-//     /* do compression if no arguments */
-//     if (argc == 1) {
-//         ret = def(stdin, stdout, Z_DEFAULT_COMPRESSION);
-//         if (ret != Z_OK)
-//             zerr(ret);
-//         return ret;
-//     }
-// 
-//     /* do decompression if -d specified */
-//     else if (argc == 2 && strcmp(argv[1], "-d") == 0) {
-//         ret = inf(stdin, stdout);
-//         if (ret != Z_OK)
-//             zerr(ret);
-//         return ret;
-//     }
-// 
-//     /* otherwise, report usage */
-//     else {
-//         fputs("zpipe usage: zpipe [-d] < source > dest\n", stderr);
-//         return 1;
-//     }
-// }
