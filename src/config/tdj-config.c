@@ -50,23 +50,27 @@ int main(int argc,char** argv){
     }else if(argc==4){
         if(!isNum(argv[1])){
             error_usage(argv[0]);
-            return 0;
+            return EXIT_FAILURE;
         }
         qid=atoi(argv[1]);
         key=argv[2];
         value=argv[3];
     }else{
         error_usage(argv[0]);
-        return 0;
+        return EXIT_FAILURE;
     }
     if(value){
-        if(tdj_set_config(qid,key,value)==-1)
+        if(tdj_set_config(qid,key,value)==-1){
             puts("Error when setting config");
+            return EXIT_FAILURE;
+        }
     }else{
-        if(tdj_get_config(qid,key,dist)==-1)
+        if(tdj_get_config(qid,key,dist)==-1){
             puts("Error: undefined key");
+            return EXIT_FAILURE;
+        }
         else
             puts(dist);
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
