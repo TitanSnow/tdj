@@ -113,7 +113,6 @@ int main(int argc,char** argv){
     const char* lang;
     char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf],wt[max_buf];
     pid_t pid;
-    struct sigaction sa;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
 #ifndef NO_COMPILER_OUTPUT
@@ -169,9 +168,7 @@ int main(int argc,char** argv){
         error_handling("Error: listen() error");
     }
 
-    memset(&sa,0,sizeof(sa));
-    sa.sa_handler=SIGCHLD_handling;
-    if(sigaction(SIGCHLD,&sa,0)==-1){
+    if(signal(SIGCHLD,SIGCHLD_handling)==SIG_ERR){
         close(ssock);
         error_handling("Error: bind SIGCHLD_handling error");
     }

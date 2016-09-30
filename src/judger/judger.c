@@ -211,9 +211,9 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
     }
 }
 void tdj_void_sa_handler(int sig){}
-int tdj_listen_SIGCHLD(struct sigaction* oldact){
-    struct sigaction act;
-    memset(&act,0,sizeof(act));
-    act.sa_handler=tdj_void_sa_handler;
-    return sigaction(SIGCHLD,&act,oldact);
+int tdj_listen_SIGCHLD(void (*oldsh)(int)){
+    void (*sh)(int)=signal(SIGCHLD,tdj_void_sa_handler);
+    if(oldsh)oldsh=sh;
+    if(sh==SIG_ERR)return -1;
+    return 0;
 }

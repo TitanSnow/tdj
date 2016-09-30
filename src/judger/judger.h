@@ -25,7 +25,7 @@ extern "C"{
 #endif
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd);
 int tdj_judge(int qid,int did,const char* path,int *pstatus);
-int tdj_listen_SIGCHLD(struct sigaction* oldact);
+int tdj_listen_SIGCHLD(void (*oldsh)(int));
 #ifdef __cplusplus
 }
 #endif
