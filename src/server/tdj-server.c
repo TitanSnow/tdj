@@ -103,8 +103,8 @@ int infd(int fd){
 }
 int main(int argc,char** argv){
     int ssock,csock,lsock;
-    int ofd,cfd,jfd,ifd;
-    int i,did,status,r,wait_time;
+    int cfd,jfd,ifd;
+    int did,status,r,wait_time;
     int lport;
     struct sockaddr_in saddr,caddr;
     socklen_t caddr_sz;
@@ -227,31 +227,23 @@ int main(int argc,char** argv){
             goto error_exit;
         if(tdj_get_config(qid,"judge_build_path",bp)==-1)
             goto error_exit;
-        for(i=0;i>=0;++i){
-            sprintf(outn,"%s/%d.out",bp,i);
-            ofd=open(outn,O_WRONLY|O_CREAT|O_EXCL);
-            if(ofd!=-1){
-                write(ofd,"1",1);
-                close(ofd);
+        sprintf(outn,"%s/%d.out",bp,getpid());
 #ifdef NO_COMPILER_OUTPUT
-                if(tdj_compile(qid,infd(csock),lang,outn,0)==-1)
+        if(tdj_compile(qid,infd(csock),lang,outn,0)==-1)
 #else
-                if(tdj_compile(qid,infd(csock),lang,outn,&cofd)==-1)
+        if(tdj_compile(qid,infd(csock),lang,outn,&cofd)==-1)
 #endif
-                {
-                    send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
-                    send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
-                    close(csock);
-                    close(lsock);
+        {
+            send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
+            send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
+            close(csock);
+            close(lsock);
 #ifndef NO_COMPILER_OUTPUT
-                    cofl=fdopen(cofd,"r");
-                    while((coch=fgetc(cofl))!=EOF)
-                        putchar(coch);
+            cofl=fdopen(cofd,"r");
+            while((coch=fgetc(cofl))!=EOF)
+                putchar(coch);
 #endif
-                    return EXIT_FAILURE;
-                }
-                break;
-            }
+            return EXIT_FAILURE;
         }
         if(tdj_listen_SIGCHLD(0)==-1){
             unlink(outn);
