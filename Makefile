@@ -47,7 +47,7 @@ build/tdj-listener.o: src/server/tdj-listener.cc src/server/server_def.h src/jud
 build/sqlite3.o: lib/sqlite/sqlite3.c
 	gcc -c lib/sqlite/sqlite3.c -o build/sqlite3.o -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION -Os
 build/sql.o: src/config/sql.cc lib/sqlite/sqlite3.h
-	g++ -c src/config/sql.cc -o build/sql.o -DNO_KEEPER_LOG $(opt)
+	g++ -c src/config/sql.cc -o build/sql.o -DNO_KEEPER_LOG -DBIND_SIGNAL $(opt)
 
 build/libconfig.a: build/config.o build/sql.o build/sqlite3.o
 	ar rc build/libconfig.a build/config.o build/sql.o build/sqlite3.o

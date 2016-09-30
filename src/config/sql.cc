@@ -22,26 +22,41 @@
 #ifndef NO_KEEPER_LOG
 #include<stdio.h>
 #endif
+#ifdef BIND_SIGNAL
+#include<signal.h>
+#endif
 #define TDJ_DB_NAME ".tdjconfig.db"
+void tdj_sql_exit_handler(int sig){
+    exit(EXIT_FAILURE);
+}
+struct db_keeper{
+    sqlite3* db;
+    db_keeper(){
+        char* dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
+        void (*sh)(int);
+        if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
+        sqlite3_free(dbp);
+#ifdef BIND_SIGNAL
+        if((sh=signal(SIGHUP,tdj_sql_exit_handler))!=SIG_DFL)
+            signal(SIGHUP,sh);
+        if((sh=signal(SIGINT,tdj_sql_exit_handler))!=SIG_DFL)
+            signal(SIGINT,sh);
+        if((sh=signal(SIGTERM,tdj_sql_exit_handler))!=SIG_DFL)
+            signal(SIGTERM,sh);
+#endif
+#ifndef NO_KEEPER_LOG
+        fputs("db_keeper: construct\n",stderr);
+#endif
+    }
+    ~db_keeper(){
+        sqlite3_close(db);
+#ifndef NO_KEEPER_LOG
+        fputs("db_keeper: destruct\n",stderr);
+#endif
+    }
+}_dbk;
 sqlite3* _inizsql(){
-    static struct db_keeper{
-        sqlite3* db;
-        db_keeper(){
-            char* dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
-            if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
-            sqlite3_free(dbp);
-#ifndef NO_KEEPER_LOG
-            fputs("db_keeper: construct\n",stderr);
-#endif
-        }
-        ~db_keeper(){
-            sqlite3_close(db);
-#ifndef NO_KEEPER_LOG
-            fputs("db_keeper: destruct\n",stderr);
-#endif
-        }
-    }dbk;
-    return dbk.db;
+    return _dbk.db;
 }
 extern "C" sqlite3* inizsql(){
     return _inizsql();
