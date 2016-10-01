@@ -26,9 +26,11 @@
 #include<signal.h>
 #endif
 #define TDJ_DB_NAME ".tdjconfig.db"
+#ifdef BIND_SIGNAL
 void tdj_sql_exit_handler(int sig){
     exit(EXIT_FAILURE);
 }
+#endif
 struct db_keeper{
     sqlite3* db;
     db_keeper(){

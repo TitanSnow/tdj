@@ -57,6 +57,7 @@ int tdj_get_config(int qid,const char* key,char* dist){
     char **result,*query;
     int nRow;
     
+    if(db==0)return -1;
     if(make_sure()==-1)return -1;
     query=sqlite3_mprintf("select value from config where (qid=0 or qid=%d) and key=%Q order by qid desc limit 1",qid,key);
     if(sqlite3_get_table(db,query,&result,&nRow,0,0)!=SQLITE_OK){
@@ -80,6 +81,7 @@ int tdj_set_config(int qid,const char* key,const char* value){
     char **result,*query;
     int nRow;
     
+    if(db==0)return -1;
     if(make_sure()==-1)return -1;
     query=sqlite3_mprintf("select value from config where qid=%d and key=%Q limit 1",qid,key);
     if(sqlite3_get_table(db,query,&result,&nRow,0,0)!=SQLITE_OK){
