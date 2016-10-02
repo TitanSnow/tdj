@@ -35,16 +35,18 @@ struct db_keeper{
     sqlite3* db;
     db_keeper(){
         char* dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
-        void (*sh)(int);
+#ifdef BIND_SIGNAL
+        struct sigaction oldact;
+#endif
         if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
         sqlite3_free(dbp);
 #ifdef BIND_SIGNAL
-        if((sh=signal(SIGHUP,tdj_sql_exit_handler))!=SIG_DFL)
-            signal(SIGHUP,sh);
-        if((sh=signal(SIGINT,tdj_sql_exit_handler))!=SIG_DFL)
-            signal(SIGINT,sh);
-        if((sh=signal(SIGTERM,tdj_sql_exit_handler))!=SIG_DFL)
-            signal(SIGTERM,sh);
+        sigaction(SIGINT,0,&oldact);
+        if(oldact.sa_handler==SIG_DFL)
+            signal(SIGINT,tdj_sql_exit_handler);
+        sigaction(SIGTERM,0,&oldact);
+        if(oldact.sa_handler==SIG_DFL)
+            signal(SIGTERM,tdj_sql_exit_handler);
 #endif
 #ifndef NO_KEEPER_LOG
         fputs("db_keeper: construct\n",stderr);
