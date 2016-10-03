@@ -44,8 +44,8 @@ bin/tdj-listener: build/tdj-listener.o build/libconfig.a
 build/tdj-listener.o: src/server/tdj-listener.cc src/server/server_def.h src/judger/judger.h src/config/config.h src/time/time.h
 	g++ -c src/server/tdj-listener.cc -o build/tdj-listener.o $(opt)
 
-build/sqlite3.o: lib/sqlite/sqlite3.c
-	gcc -c lib/sqlite/sqlite3.c -o build/sqlite3.o -DSQLITE_THREADSAFE=0 -DSQLITE_OMIT_LOAD_EXTENSION -Os
+build/sqlite3.o: lib/sqlite/sqlite3.c lib/sqlite/config.h
+	gcc -c lib/sqlite/sqlite3.c -o build/sqlite3.o -D_HAVE_SQLITE_CONFIG_H -Os
 build/sql.o: src/config/sql.cc lib/sqlite/sqlite3.h
 	g++ -c src/config/sql.cc -o build/sql.o -DNO_KEEPER_LOG -DBIND_SIGNAL $(opt)
 
@@ -67,3 +67,4 @@ prepare:
 	-mkdir bin
 install:
 	cp bin/* /usr/bin
+.PHONY: all clean prepare install
