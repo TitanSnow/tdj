@@ -29,6 +29,7 @@
 #include<stdio.h>
 #include<stdint.h>
 #include<map>
+#include<netinet/in.h>
 using std::map;
 int64_t MAKEPJID(int32_t pid,int32_t jid){
     int64_t r;

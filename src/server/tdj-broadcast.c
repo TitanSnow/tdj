@@ -24,6 +24,7 @@
 #include<stdlib.h>
 #include<stdint.h>
 #include<unistd.h>
+#include<netinet/in.h>
 #include"../config/config.h"
 #include"server_def.h"
 int has_dot(const char* p){

@@ -34,6 +34,7 @@
 #include<stdint.h>
 #include<sys/wait.h>
 #include<errno.h>
+#include<netinet/in.h>
 void error_handling(const char* mes){
     puts(mes);
     exit(EXIT_FAILURE);

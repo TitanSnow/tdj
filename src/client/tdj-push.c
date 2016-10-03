@@ -26,6 +26,7 @@
 #include<arpa/inet.h>
 #include<sys/select.h>
 #include<sys/socket.h>
+#include<netinet/in.h>
 #include"../time/time.h"
 #include"../server/server_def.h"
 #include"../judger/judger.h"
