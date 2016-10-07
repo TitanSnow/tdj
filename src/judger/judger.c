@@ -25,6 +25,10 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
+#include<limits.h>
+#ifndef OPEN_MAX
+#define OPEN_MAX (sysconf(_SC_OPEN_MAX))
+#endif
 int stdi,stdo,stde;
 int reopen_inout(int in,int out,int err){
     if((stdi=dup(0))==-1) return -1;
@@ -69,6 +73,11 @@ int restore_inout(){
     close(stde);
     return 0;
 }
+void close_unusedfd(){
+    int i;
+    for(i=3;i<OPEN_MAX;++i)
+        close(i);
+}
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const size_t max_buf=1024;
@@ -94,6 +103,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
             return -1;
     }else{
         // child
+        close_unusedfd();
         execlp(cp,cp,"-x",lang,"-","-o",path,NULL);
         _exit(-1);
     }
@@ -206,6 +216,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         return pipefd[0];
     }else{
         // child
+        close_unusedfd();
         execlp(path,path,NULL);
         _exit(-1);
     }
