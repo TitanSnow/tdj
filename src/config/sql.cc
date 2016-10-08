@@ -17,7 +17,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include"../../lib/sqlite/sqlite3.h"
+#include"lib/sqlite/sqlite3.h"
 #include<stdlib.h>
 #ifndef NO_KEEPER_LOG
 #include<stdio.h>

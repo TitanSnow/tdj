@@ -17,7 +17,7 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include"../config/config.h"
+#include"config/config.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -27,11 +27,11 @@
 #include<sys/select.h>
 #include<sys/socket.h>
 #include<netinet/in.h>
-#include"../time/time.h"
-#include"../server/server_def.h"
-#include"../judger/judger.h"
-#include"../z/zpipe.h"
-#include"../../lib/zlib/zlib.h"
+#include"time/time.h"
+#include"server/server_def.h"
+#include"judger/judger.h"
+#include"z/zpipe.h"
+#include"lib/zlib/zlib.h"
 int read_addr(const char** ip,const char** pt){
     static char nip[128],npt[128];
     size_t max_buf=128;

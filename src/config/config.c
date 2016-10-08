@@ -18,7 +18,7 @@
 */
 
 #include"config.h"
-#include"../../lib/sqlite/sqlite3.h"
+#include"lib/sqlite/sqlite3.h"
 #include<string.h>
 
 sqlite3* inizsql();     // from sql.cc

@@ -1,4 +1,4 @@
-opt=-Wall -O2
+opt=-Wall -O2 -Isrc -I.
 all: bin/tdj-config bin/tdj-server bin/tdj-broadcast bin/tdj-new bin/tdj-push bin/tdj-listener
 bin/tdj-config: build/tdj-config.o build/libconfig.a
 	c++ build/tdj-config.o build/libconfig.a -o bin/tdj-config $(opt)

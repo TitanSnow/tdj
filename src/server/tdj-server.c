@@ -17,13 +17,13 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include"../config/config.h"
-#include"../judger/judger.h"
-#include"../time/time.h"
-#include"../judger/compare.h"
+#include"config/config.h"
+#include"judger/judger.h"
+#include"time/time.h"
+#include"judger/compare.h"
 #include"server_def.h"
-#include"../z/zpipe.h"
-#include"../../lib/zlib/zlib.h"
+#include"z/zpipe.h"
+#include"lib/zlib/zlib.h"
 #include<unistd.h>
 #include<fcntl.h>
 #include<stdio.h>

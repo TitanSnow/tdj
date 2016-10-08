@@ -17,10 +17,10 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include"../config/config.h"
+#include"config/config.h"
 #include"judger.h"
 #include"compare.h"
-#include"../time/time.h"
+#include"time/time.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>

@@ -18,9 +18,9 @@
 */
 
 #include"server_def.h"
-#include"../judger/judger.h"
-#include"../config/config.h"
-#include"../time/time.h"
+#include"judger/judger.h"
+#include"config/config.h"
+#include"time/time.h"
 #include<sys/socket.h>
 #include<unistd.h>
 #include<string.h>
