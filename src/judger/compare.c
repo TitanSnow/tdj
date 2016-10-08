@@ -27,8 +27,8 @@ int tdj_strict_cmp(int fd1,int fd2){
     if(!(fl1=fdopen(fd1,"r"))) return -1;
     if(!(fl2=fdopen(fd2,"r"))) return -1;
     while(1){
-        ch1=fgetc(fl1);
-        ch2=fgetc(fl2);
+        fread(&ch1,1,1,fl1);
+        fread(&ch2,1,1,fl2);
         if(ch1!=ch2) return 0;
         if(ch1==EOF) return 1;
     }
