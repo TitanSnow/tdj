@@ -16,7 +16,7 @@ build/judger.o: src/judger/judger.c src/judger/judger.h src/config/config.h
 build/compare.o: src/judger/compare.c src/judger/compare.h
 	cc -c src/judger/compare.c -o build/compare.o $(opt)
 
-build/time.o: src/time/time.c src/time/time.h
+build/time.o: src/time/time.c src/time/time.h src/config/config.h
 	cc -c src/time/time.c -o build/time.o $(opt)
 
 bin/tdj-server: build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a
