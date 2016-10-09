@@ -258,6 +258,7 @@ int main(int argc,char** argv){
             tm=tdj_time();
             jfd=tdj_judge(qid,did,outn,&status);
             tm=tdj_time()-tm;
+            if(tm==0)tm=1;
             if(jfd==-1){
                 send_mes(csock,0,jid,TDJ_JE,status,tm);
                 send_mes(lsock,0,jid,TDJ_JE,status,tm);
