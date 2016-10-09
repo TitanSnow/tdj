@@ -22,7 +22,7 @@ build/time.o: src/time/time.c src/time/time.h src/config/config.h
 bin/tdj-server: build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a
 	c++ build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a -o bin/tdj-server $(opt)
 build/tdj-server.o: src/server/tdj-server.c src/server/server_def.h src/judger/judger.h src/judger/compare.h src/time/time.h src/config/config.h src/z/zpipe.h lib/zlib/zlib.h
-	cc -c src/server/tdj-server.c -o build/tdj-server.o -DNO_COMPILER_OUTPUT $(opt)
+	cc -c src/server/tdj-server.c -o build/tdj-server.o $(opt)
 
 bin/tdj-broadcast: build/tdj-broadcast.o build/libconfig.a
 	c++ build/tdj-broadcast.o build/libconfig.a -o bin/tdj-broadcast $(opt)

@@ -60,6 +60,7 @@ int get_localsock(int* pport){
     }
     if(pport!=0)
         *pport=port;
+    fcntl(sock,F_SETFD,FD_CLOEXEC);
     return sock;
 }
 void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_usec_t tm){
@@ -100,6 +101,7 @@ int infd(int fd){
     }
     fflush(d);
     fclose(d);
+    fcntl(pipefd[0],FD_CLOEXEC);
     return pipefd[0];
 }
 int main(int argc,char** argv){
@@ -116,11 +118,6 @@ int main(int argc,char** argv){
     pid_t pid;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
-#ifndef NO_COMPILER_OUTPUT
-    int cofd;
-    FILE* cofl;
-    int coch;
-#endif
 
     memset(&saddr,0,sizeof(saddr));
     saddr.sin_family=AF_INET;
@@ -210,6 +207,7 @@ int main(int argc,char** argv){
         }
         normal_run:;
         close(ssock);
+        fcntl(csock,F_SETFD,FD_CLOEXEC);
         if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         if(se!=TDJ_VERSION)
             goto error_exit;
@@ -229,21 +227,11 @@ int main(int argc,char** argv){
         if(tdj_get_config(qid,"judge_build_path",bp)==-1)
             goto error_exit;
         sprintf(outn,"%s/%d.out",bp,getpid());
-#ifdef NO_COMPILER_OUTPUT
-        if(tdj_compile(qid,infd(csock),lang,outn,0)==-1)
-#else
-        if(tdj_compile(qid,infd(csock),lang,outn,&cofd)==-1)
-#endif
-        {
+        if(tdj_compile(qid,infd(csock),lang,outn,0)==-1){
             send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
             send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
             close(csock);
             close(lsock);
-#ifndef NO_COMPILER_OUTPUT
-            cofl=fdopen(cofd,"r");
-            while((coch=fgetc(cofl))!=EOF)
-                putchar(coch);
-#endif
             return EXIT_FAILURE;
         }
         if(tdj_listen_SIGCHLD(0)==-1){
