@@ -18,13 +18,19 @@
 */
 
 #include"time.h"
-#include<sys/time.h>
+#include<time.h>
 tdj_usec_t tdj_time(){
-    struct timeval tv;
+    struct timespec tp;
     tdj_usec_t tm;
-    gettimeofday(&tv,0);
-    tm=tv.tv_sec;
+    if(clock_gettime(
+#ifdef CLOCK_REALTIME_COARSE
+        CLOCK_REALTIME_COARSE
+#else
+        CLOCK_REALTIME
+#endif
+        ,&tp)==-1)return 0;
+    tm=tp.tv_sec;
     tm*=1000000;
-    tm+=tv.tv_usec;
+    tm+=tp.tv_nsec/1000;
     return tm;
 }
