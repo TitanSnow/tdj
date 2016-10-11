@@ -39,9 +39,6 @@ void error_handling(const char* mes){
     puts(mes);
     exit(EXIT_FAILURE);
 }
-void SIGCHLD_handling(int sig){
-    waitpid(-1,0,WNOHANG);
-}
 int get_localsock(int* pport){
     struct sockaddr_in addr;
     const size_t max_buf=1024;
@@ -166,10 +163,7 @@ int main(int argc,char** argv){
         error_handling("Error: listen() error");
     }
 
-    if(signal(SIGCHLD,SIGCHLD_handling)==SIG_ERR){
-        close(ssock);
-        error_handling("Error: bind SIGCHLD_handling error");
-    }
+    signal(SIGCHLD,SIG_IGN);
     
     if((lsock=get_localsock(&lport))==-1){
         puts("Error: cannot get socket to listener");
