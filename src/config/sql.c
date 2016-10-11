@@ -27,14 +27,26 @@
 #endif
 #define TDJ_DB_NAME ".tdjconfig.db"
 #ifdef BIND_SIGNAL
+sqlite3* _inizsql(int flag);
 void tdj_sql_exit_handler(int sig){
-    exit(EXIT_FAILURE);
+    _inizsql(-1);
+    signal(sig,SIG_DFL);
+    raise(sig);
 }
 #endif
-struct db_keeper{
-    sqlite3* db;
-    db_keeper(){
-        char* dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
+sqlite3* _inizsql(int flag){
+    static int inited=0;
+    static sqlite3 *db;
+    char* dbp;
+    if(flag!=0){
+        sqlite3_close(db);
+#ifndef NO_KEEPER_LOG
+        fputs("db_keeper: destruct\n",stderr);
+#endif
+        return 0;
+    }
+    if(inited==0){
+        dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
 #ifdef BIND_SIGNAL
         struct sigaction oldact;
 #endif
@@ -51,17 +63,10 @@ struct db_keeper{
 #ifndef NO_KEEPER_LOG
         fputs("db_keeper: construct\n",stderr);
 #endif
+        inited=1;
     }
-    ~db_keeper(){
-        sqlite3_close(db);
-#ifndef NO_KEEPER_LOG
-        fputs("db_keeper: destruct\n",stderr);
-#endif
-    }
-}_dbk;
-sqlite3* _inizsql(){
-    return _dbk.db;
+    return db;
 }
-extern "C" sqlite3* inizsql(){
-    return _inizsql();
+sqlite3* inizsql(){
+    return _inizsql(0);
 }

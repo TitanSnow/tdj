@@ -2,14 +2,14 @@ opt =-Wall -O2
 sopt=-Wall -O2 -Isrc -I.
 all: bin/tdj-config bin/tdj-server bin/tdj-broadcast bin/tdj-new bin/tdj-push bin/tdj-listener
 bin/tdj-config: build/tdj-config.o build/libconfig.a
-	c++ build/tdj-config.o build/libconfig.a -o bin/tdj-config $(opt)
+	cc build/tdj-config.o build/libconfig.a -o bin/tdj-config $(opt)
 build/tdj-config.o: src/config/tdj-config.c src/config/config.h
 	cc -c src/config/tdj-config.c -o build/tdj-config.o $(sopt)
 build/config.o: src/config/config.c src/config/config.h lib/sqlite/sqlite3.h
 	cc -c src/config/config.c -o build/config.o $(sopt)
 
 bin/tdj-localjudge: build/tdj-localjudge.o build/judger.o build/compare.o build/libconfig.a build/time.o
-	c++ build/tdj-localjudge.o build/judger.o build/compare.o build/libconfig.a build/time.o -o bin/tdj-localjudge $(opt)
+	cc build/tdj-localjudge.o build/judger.o build/compare.o build/libconfig.a build/time.o -o bin/tdj-localjudge $(opt)
 build/tdj-localjudge.o: src/config/config.h src/judger/judger.h src/judger/compare.h src/judger/tdj-localjudge.c src/time/time.h
 	cc -c src/judger/tdj-localjudge.c -o build/tdj-localjudge.o $(sopt)
 build/judger.o: src/judger/judger.c src/judger/judger.h src/config/config.h
@@ -21,12 +21,12 @@ build/time.o: src/time/time.c src/time/time.h src/config/config.h
 	cc -c src/time/time.c -o build/time.o $(sopt)
 
 bin/tdj-server: build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a
-	c++ build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a -o bin/tdj-server $(opt)
+	cc build/tdj-server.o build/libconfig.a build/judger.o build/time.o build/compare.o build/libz.a -o bin/tdj-server $(opt)
 build/tdj-server.o: src/server/tdj-server.c src/server/server_def.h src/judger/judger.h src/judger/compare.h src/time/time.h src/config/config.h src/z/zpipe.h lib/zlib/zlib.h
 	cc -c src/server/tdj-server.c -o build/tdj-server.o $(sopt)
 
 bin/tdj-broadcast: build/tdj-broadcast.o build/libconfig.a
-	c++ build/tdj-broadcast.o build/libconfig.a -o bin/tdj-broadcast $(opt)
+	cc build/tdj-broadcast.o build/libconfig.a -o bin/tdj-broadcast $(opt)
 build/tdj-broadcast.o: src/server/server_def.h src/config/config.h src/server/tdj-broadcast.c
 	cc -c src/server/tdj-broadcast.c -o build/tdj-broadcast.o $(sopt)
 
@@ -36,7 +36,7 @@ build/tdj-new.o: src/client/tdj-new.c
 	cc -c src/client/tdj-new.c -o build/tdj-new.o $(sopt)
 
 bin/tdj-push: build/tdj-push.o build/time.o build/libconfig.a build/libz.a
-	c++ build/tdj-push.o build/time.o build/libconfig.a build/libz.a -o bin/tdj-push $(opt)
+	cc build/tdj-push.o build/time.o build/libconfig.a build/libz.a -o bin/tdj-push $(opt)
 build/tdj-push.o: src/client/tdj-push.c src/time/time.h src/config/config.h src/server/server_def.h src/judger/judger.h src/z/zpipe.h lib/zlib/zlib.h
 	cc -c src/client/tdj-push.c -o build/tdj-push.o $(sopt)
 
@@ -47,8 +47,8 @@ build/tdj-listener.o: src/server/tdj-listener.cc src/server/server_def.h src/jud
 
 build/sqlite3.o: lib/sqlite/sqlite3.c lib/sqlite/config.h
 	cc -c lib/sqlite/sqlite3.c -o build/sqlite3.o -D_HAVE_SQLITE_CONFIG_H -Os
-build/sql.o: src/config/sql.cc lib/sqlite/sqlite3.h
-	c++ -c src/config/sql.cc -o build/sql.o -DNO_KEEPER_LOG -DBIND_SIGNAL $(sopt)
+build/sql.o: src/config/sql.c lib/sqlite/sqlite3.h
+	cc -c src/config/sql.c -o build/sql.o -DNO_KEEPER_LOG -DBIND_SIGNAL $(sopt)
 
 build/libconfig.a: build/config.o build/sql.o build/sqlite3.o
 	ar rc build/libconfig.a build/config.o build/sql.o build/sqlite3.o
