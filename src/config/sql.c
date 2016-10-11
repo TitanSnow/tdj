@@ -28,8 +28,11 @@
 #define TDJ_DB_NAME ".tdjconfig.db"
 #ifdef BIND_SIGNAL
 sqlite3* _inizsql(int flag);
-void tdj_sql_exit_handler(int sig){
+void tdj_close_db(){
     _inizsql(-1);
+}
+void tdj_sql_exit_handler(int sig){
+    tdj_close_db();
     signal(sig,SIG_DFL);
     raise(sig);
 }
@@ -63,6 +66,7 @@ sqlite3* _inizsql(int flag){
 #ifndef NO_KEEPER_LOG
         fputs("db_keeper: construct\n",stderr);
 #endif
+        atexit(tdj_close_db);
         inited=1;
     }
     return db;
