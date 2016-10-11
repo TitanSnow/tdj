@@ -202,6 +202,7 @@ int main(int argc,char** argv){
         normal_run:;
         close(ssock);
         fcntl(csock,F_SETFD,FD_CLOEXEC);
+        signal(SIGCHLD,tdj_void_signal_handler);
         if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         if(se!=TDJ_VERSION)
             goto error_exit;
@@ -227,10 +228,6 @@ int main(int argc,char** argv){
             close(csock);
             close(lsock);
             return EXIT_FAILURE;
-        }
-        if(tdj_listen_SIGCHLD(0)==-1){
-            unlink(outn);
-            goto error_exit;
         }
         for(did=1;;++did){
             sprintf(fn,"%s/%d/%d.in",jp,qid,did);
