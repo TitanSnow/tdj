@@ -40,7 +40,7 @@ void tdj_sql_exit_handler(int sig){
 sqlite3* _inizsql(int flag){
     static int inited=0;
     static sqlite3 *db;
-    char* dbp;
+    const char* dbp;
     if(flag!=0){
         sqlite3_close(db);
         db=0;
@@ -50,12 +50,11 @@ sqlite3* _inizsql(int flag){
         return 0;
     }
     if(inited==0){
-        dbp=sqlite3_mprintf("%s/" TDJ_DB_NAME,getenv("HOME"));
+        dbp=TDJ_DB_NAME;
 #ifdef BIND_SIGNAL
         struct sigaction oldact;
 #endif
         if(sqlite3_open(dbp,&db)!=SQLITE_OK) db=0;
-        sqlite3_free(dbp);
 #ifdef BIND_SIGNAL
         sigaction(SIGINT,0,&oldact);
         if(oldact.sa_handler==SIG_DFL)
