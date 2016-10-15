@@ -112,7 +112,7 @@ fin_loop:;
     pbaddr=addrs;
     puts("Recv broadcast from these servers");
     for(;pbpt<ppt&&(struct sockaddr*)pbaddr<paddr;++pbpt,++pbaddr){
-        printf("%ld)\t%s:%d\n",pbpt-pts,inet_ntoa(pbaddr->sin_addr),*pbpt);
+        printf("%ld)\t%s:%d\n",(long)(pbpt-pts),inet_ntoa(pbaddr->sin_addr),*pbpt);
     }
     if(ppt-pts==1){
         puts("Select server 0");
@@ -122,7 +122,7 @@ fin_loop:;
         *pt=npt;
         return 0;
     }
-    printf("Select which? (0..%ld): ",ppt-pts-1);
+    printf("Select which? (0..%ld): ",(long)(ppt-pts-1));
 read_id:scanf("%d",&id);
     if(id>=ppt-pts||id<0){
         printf("Out of range, try again: ");
