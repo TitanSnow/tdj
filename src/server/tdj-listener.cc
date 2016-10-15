@@ -31,12 +31,14 @@
 #include<map>
 #include<netinet/in.h>
 using std::map;
-int64_t MAKEPJID(int32_t pid,int32_t jid){
-    int64_t r;
-    r=pid;
-    r<<=32;
-    r|=jid;
-    return r;
+using std::pair;
+using std::make_pair;
+pair<u_int64_t,int32_t> MAKESJID(const struct sockaddr_in* paddr,int32_t jid){
+    u_int64_t adr;
+    adr=paddr->sin_addr.s_addr;
+    adr<<=32;
+    adr|=paddr->sin_port;
+    return make_pair(adr,jid);
 }
 int main(){
     int sock;
@@ -46,7 +48,7 @@ int main(){
     char pt[max_buf];
     int32_t buf[7];
     ssize_t r;
-    map<int64_t,int> didmap;
+    map<pair<u_int64_t,int32_t>,int> didmap;
     
     memset(&addr,0,sizeof(addr));
     addr.sin_family=AF_INET;
@@ -70,7 +72,7 @@ int main(){
         if((r=recvfrom(sock,buf,sizeof(buf),0,(struct sockaddr*)&faddr,&addrlen))==-1) continue;
         if(buf[0]!=TDJ_VERSION) continue;
         printf("%15s:%5d",inet_ntoa(faddr.sin_addr),ntohs(faddr.sin_port));
-        printf("%7d%12d%12d",++didmap[MAKEPJID(buf[1],buf[2])],buf[1],buf[2]);
+        printf("%7d%12d%12d",++didmap[MAKESJID(&faddr,buf[2])],buf[1],buf[2]);
         switch(buf[3]){
             case TDJ_AC:
                 printf("%12s","AC");
