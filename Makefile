@@ -45,6 +45,8 @@ bin/tdj-listener: build/tdj-listener.o build/libconfig.a
 build/tdj-listener.o: src/server/tdj-listener.cc src/server/server_def.h src/judger/judger.h src/config/config.h src/time/time.h
 	c++ -c src/server/tdj-listener.cc -o build/tdj-listener.o $(sopt)
 
+lib/sqlite/config.h: lib/sqlite/configure lib/sqlite/config.h.in
+	cd lib/sqlite;./configure;cd ../..
 build/sqlite3.o: lib/sqlite/sqlite3.c lib/sqlite/config.h
 	cc -c lib/sqlite/sqlite3.c -o build/sqlite3.o -D_HAVE_SQLITE_CONFIG_H -Os
 build/sql.o: src/config/sql.c lib/sqlite/sqlite3.h

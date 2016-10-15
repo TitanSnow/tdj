@@ -1,0 +1,83 @@
+#!/usr/bin/env sh
+test=sqlite3test$$
+
+cp config.h.in config.h
+
+cat > $test.c <<EOF
+#include<unistd.h>
+int main(){
+    fdatasync(1);
+    return 0;
+}
+EOF
+cc $test.c>/dev/null 2>&1
+if test $? -eq 0; then
+    echo "#define HAVE_FDATASYNC 1">>config.h
+    echo "Checking for fdatasync()... Yes."
+else
+    echo "Checking for fdatasync()... No."
+fi
+
+cat > $test.c <<EOF
+#include<malloc.h>
+int main(){
+    malloc_usable_size(NULL);
+    return 0;
+}
+EOF
+cc $test.c>/dev/null 2>&1
+if test $? -eq 0; then
+    echo "#define HAVE_MALLOC_USABLE_SIZE 1">>config.h
+    echo "Checking for malloc_usable_size()... Yes."
+else
+    echo "Checking for malloc_usable_size()... No."
+fi
+
+cat > $test.c <<EOF
+#include<string.h>
+int main(){
+    strchrnul("",0);
+    return 0;
+}
+EOF
+cc $test.c>/dev/null 2>&1
+if test $? -eq 0; then
+    echo "#define HAVE_STRCHRNUL 1">>config.h
+    echo "Checking for strchrnul()... Yes."
+else
+    echo "Checking for strchrnul()... No."
+fi
+
+cat > $test.c <<EOF
+#include<unistd.h>
+int main(){
+    usleep(0);
+    return 0;
+}
+EOF
+cc $test.c>/dev/null 2>&1
+if test $? -eq 0; then
+    echo "#define HAVE_USLEEP 1">>config.h
+    echo "Checking for usleep()... Yes."
+else
+    echo "Checking for usleep()... No."
+fi
+
+cat > $test.c <<EOF
+#include<sys/types.h>
+#include<utime.h>
+int main(){
+    utime("",0);
+    return 0;
+}
+EOF
+cc $test.c>/dev/null 2>&1
+if test $? -eq 0; then
+    echo "#define HAVE_UTIME 1">>config.h
+    echo "Checking for utime()... Yes."
+else
+    echo "Checking for utime()... No."
+fi
+
+rm $test.c
+rm a.out
