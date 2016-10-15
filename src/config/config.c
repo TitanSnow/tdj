@@ -20,6 +20,7 @@
 #include"config.h"
 #include"lib/sqlite/sqlite3.h"
 #include<string.h>
+#include<stdlib.h>
 
 sqlite3* inizsql();     // from sql.cc
 
@@ -52,27 +53,70 @@ int make_sure(){
     return -1;
 }
 
-int tdj_get_config(int qid,const char* key,char* dist){
+char* _get_storehouse(int flag,size_t len){
+    static char** rmap=0;
+    static size_t lmap=0;
+    size_t i;
+    if(flag!=0){
+        for(i=0;i<lmap;++i)
+            free(rmap[i]);
+        free(rmap);
+        rmap=0;
+        lmap=0;
+        return 0;
+    }
+    rmap=realloc(rmap,++lmap);
+    if(rmap==0){
+        lmap=0;
+        return 0;
+    }
+    rmap[lmap-1]=malloc(len);
+    return rmap[lmap-1];
+}
+
+void _clean_storehouse(){
+    _get_storehouse(-1,0);
+}
+
+char* tdj_get_storehouse(size_t len){
+    static int inited=0;
+    if(inited==0){
+        atexit(_clean_storehouse);
+        inited=1;
+    }
+    return _get_storehouse(0,len);
+}
+
+char* tdj_get_config2(int qid,const char* key){
     sqlite3 *db=inizsql();
     char **result,*query;
     int nRow;
+    char *dist;
     
-    if(db==0)return -1;
-    if(make_sure()==-1)return -1;
+    if(db==0)return 0;
+    if(make_sure()==-1)return 0;
     query=sqlite3_mprintf("select value from config where (qid=0 or qid=%d) and key=%Q order by qid desc limit 1",qid,key);
     if(sqlite3_get_table(db,query,&result,&nRow,0,0)!=SQLITE_OK){
         sqlite3_free(query);
-        return -1;
+        return 0;
     }
     if(nRow<=0){
         sqlite3_free(query);
         sqlite3_free_table(result);
-        return -1;
+        return 0;
     }
     
     sqlite3_free(query);
-    if(dist)strcpy(dist,result[1]);
+    if((dist=tdj_get_storehouse(strlen(result[1])+1)))
+        strcpy(dist,result[1]);
     sqlite3_free_table(result);
+    return dist;
+}
+
+int tdj_get_config(int qid,const char* key,char* dist){
+    char *r;
+    if((r=tdj_get_config2(qid,key))==0) return -1;
+    strcpy(dist,r);
     return 0;
 }
 
