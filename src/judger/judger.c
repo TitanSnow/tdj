@@ -31,6 +31,9 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     char cp[max_buf];
     int wstatus;
     int pipefd[2];
+    struct sigaction sa;
+    if(sigaction(SIGCHLD,0,&sa)==-1) return -1;
+    if(sa.sa_handler!=tdj_void_signal_handler) return -1;
     if(pipe(pipefd)==-1) return -1;
     if(pcpfd!=0)*pcpfd=pipefd[0];
     pid=fork();
@@ -70,6 +73,15 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
     FILE* pf;
     char ts;
     if(pstatus)*pstatus=TDJ_JUDGESUCCESS;
+    struct sigaction sa;
+    if(sigaction(SIGCHLD,0,&sa)==-1){
+        *pstatus=TDJ_SIGERROR;
+        return -1;
+    }
+    if(sa.sa_handler!=tdj_void_signal_handler){
+        *pstatus=TDJ_SIGERROR;
+        return -1;
+    }
     if(pipe(pipefd)==-1){
         if(pstatus)*pstatus=TDJ_PIPEGETTINGERROR;
         return -1;
