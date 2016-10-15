@@ -87,17 +87,27 @@ ssize_t read_count(int sock,char* buf,size_t cnt){
 int infd(int fd){
     FILE *s,*d;
     int pipefd[2];
+    pid_t pid;
     if(pipe(pipefd)==-1)
         return -1;
-    s=fdopen(fd,"r");
-    d=fdopen(pipefd[1],"w");
-    if(inf(s,d)!=Z_OK){
-        fclose(d);
-        close(pipefd[0]);
+    if((pid=fork())==-1)
         return -1;
+    if(pid==0){
+        // child
+        if(fork()==0){
+            // grandchild
+            s=fdopen(fd,"r");
+            d=fdopen(pipefd[1],"w");
+            inf(s,d);
+            fflush(d);
+            _Exit(0);
+        }
+        // child
+        _Exit(0);
     }
-    fflush(d);
-    fclose(d);
+    // parent
+    close(pipefd[1]);
+    waitpid(pid,0,0);
     fcntl(pipefd[0],FD_CLOEXEC);
     return pipefd[0];
 }
