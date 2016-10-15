@@ -116,7 +116,7 @@ char* tdj_get_config2(int qid,const char* key){
 int tdj_get_config(int qid,const char* key,char* dist){
     char *r;
     if((r=tdj_get_config2(qid,key))==0) return -1;
-    strcpy(dist,r);
+    if(dist)strcpy(dist,r);
     return 0;
 }
 
