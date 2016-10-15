@@ -22,7 +22,7 @@
 #include<arpa/inet.h>
 #include<stdio.h>
 #include<stdlib.h>
-#include<stdint.h>
+#include<sys/types.h>
 #include<unistd.h>
 #include<netinet/in.h>
 #include"config/config.h"

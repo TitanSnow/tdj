@@ -27,7 +27,7 @@
 #include<arpa/inet.h>
 #include<stdlib.h>
 #include<stdio.h>
-#include<stdint.h>
+#include<sys/types.h>
 #include<map>
 #include<netinet/in.h>
 using std::map;

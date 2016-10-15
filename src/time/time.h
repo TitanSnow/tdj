@@ -17,13 +17,13 @@
 *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include<stdint.h>
+#include<sys/types.h>
 #ifndef TDJ_TIME_H
 #define TDJ_TIME_H
 #ifdef __cplusplus
 extern "C"{
 #endif
-typedef uint64_t tdj_usec_t;
+typedef u_int64_t tdj_usec_t;
 tdj_usec_t tdj_time();
 #ifdef __cplusplus
 }
