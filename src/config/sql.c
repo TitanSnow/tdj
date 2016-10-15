@@ -43,6 +43,7 @@ sqlite3* _inizsql(int flag){
     char* dbp;
     if(flag!=0){
         sqlite3_close(db);
+        db=0;
 #ifndef NO_KEEPER_LOG
         fputs("db_keeper: destruct\n",stderr);
 #endif
