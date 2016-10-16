@@ -19,6 +19,7 @@
 
 #include"judger.h"
 #include"config/config.h"
+#include"utility/printf.h"
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -61,9 +62,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
 }
 int tdj_judge(int qid,int did,const char* path,int *pstatus){
     pid_t pid;
-    const size_t max_buf=1024;
-    char fn[max_buf],pp[max_buf];
-    const char *jp,*tl;
+    const char *jp,*tl,*fn,*pp;
     int pipefd[2];
     int fd;
     int wstatus;
@@ -95,8 +94,9 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         goto normal_run;
         error_exit:;
         {
-            sprintf(pp,"/proc/%d/stat",pid);
+            pp=mprintf("/proc/%d/stat",pid);
             pf=fopen(pp,"r");
+            free((void*)pp);
             if(!pf) return -1;
             ts='X';
             fscanf(pf,"%*d %*s %c",&ts);
@@ -139,8 +139,9 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
     }else{
         // child
         if((jp=tdj_get_config2(qid,"judge_data_path"))==0) exit(-1);
-        sprintf(fn,"%s/%d/%d.in",jp,qid,did);
+        fn=mprintf("%s/%d/%d.in",jp,qid,did);
         fd=open(fn,O_RDONLY);
+        free((void*)fn);
         if(fd==-1) exit(-1);
         if(dup2(fd,0)==-1) exit(-1);
         close(fd);

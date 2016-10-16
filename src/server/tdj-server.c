@@ -23,6 +23,7 @@
 #include"judger/compare.h"
 #include"server_def.h"
 #include"z/zpipe.h"
+#include"utility/printf.h"
 #include"lib/zlib/zlib.h"
 #include<unistd.h>
 #include<fcntl.h>
@@ -117,9 +118,7 @@ int main(int argc,char** argv){
     int lport;
     struct sockaddr_in saddr,caddr;
     socklen_t caddr_sz;
-    const size_t max_buf=1024;
-    const char* lang,*sz_backlog,*jp,*cm,*bp,*ip,*pt,*wt;
-    char outn[max_buf],fn[max_buf];
+    const char* lang,*sz_backlog,*jp,*cm,*bp,*ip,*pt,*wt,*outn,*fn;
     pid_t pid;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
@@ -229,16 +228,17 @@ int main(int argc,char** argv){
             goto error_exit;
         if((bp=tdj_get_config2(qid,"judge_build_path"))==0)
             goto error_exit;
-        sprintf(outn,"%s/%d.out",bp,getpid());
+        outn=mprintf("%s/%d.out",bp,getpid());
         if(tdj_compile(qid,infd(csock),lang,outn,0)==-1){
             send_mes(csock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
             send_mes(lsock,0,jid,TDJ_COMPILEERROR,TDJ_JUDGESUCCESS,0);
             close(csock);
             close(lsock);
+            free((void*)outn);
             return EXIT_FAILURE;
         }
         for(did=1;;++did){
-            sprintf(fn,"%s/%d/%d.in",jp,qid,did);
+            fn=mprintf("%s/%d/%d.in",jp,qid,did);
             ifd=open(fn,O_RDONLY);
             if(ifd==-1) break;
             close(ifd);
@@ -251,8 +251,10 @@ int main(int argc,char** argv){
                 send_mes(lsock,0,jid,TDJ_JE,status,tm);
                 continue;
             }
-            sprintf(fn,"%s/%d/%d.out",jp,qid,did);
+            free((void*)fn);
+            fn=mprintf("%s/%d/%d.out",jp,qid,did);
             cfd=open(fn,O_RDONLY);
+            free((void*)fn);
             if(cfd==-1){
                 send_mes(csock,0,jid,TDJ_OTHERROR,status,0);
                 send_mes(lsock,0,jid,TDJ_OTHERROR,status,0);
@@ -281,7 +283,7 @@ int main(int argc,char** argv){
             close(cfd);
         }
         unlink(outn);
-        
+        free((void*)outn);
         close(csock);
         close(lsock);
         return EXIT_SUCCESS;
