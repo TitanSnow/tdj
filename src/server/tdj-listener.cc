@@ -44,15 +44,14 @@ int main(){
     int sock;
     struct sockaddr_in addr,faddr;
     socklen_t addrlen;
-    const size_t max_buf=1024;
-    char pt[max_buf];
+    const char *pt;
     int32_t buf[7];
     ssize_t r;
     map<pair<u_int64_t,int32_t>,int> didmap;
     
     memset(&addr,0,sizeof(addr));
     addr.sin_family=AF_INET;
-    if(tdj_get_config(0,"listen_port",pt)==-1) strcpy(pt,"25864");
+    if((pt=tdj_get_config2(0,"listen_port"))==0) pt="25864";
     addr.sin_port=htons(atoi(pt));
     addr.sin_addr.s_addr=htonl(INADDR_ANY);
 

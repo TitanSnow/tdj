@@ -41,14 +41,13 @@ void error_handling(const char* mes){
 }
 int get_localsock(int* pport){
     struct sockaddr_in addr;
-    const size_t max_buf=1024;
-    char pt[max_buf];
+    const char *pt;
     int sock;
     int port;
     memset(&addr,0,sizeof(addr));
     addr.sin_family=AF_INET;
     addr.sin_addr.s_addr=htonl(INADDR_LOOPBACK);
-    if(tdj_get_config(0,"listen_port",pt)==-1) strcpy(pt,"25864");
+    if((pt=tdj_get_config2(0,"listen_port"))==0) pt="25864";
     addr.sin_port=htons(port=atoi(pt));
     if((sock=socket(PF_INET,SOCK_DGRAM,0))==-1)return -1;
     if(connect(sock,(struct sockaddr*)&addr,sizeof(addr))==-1){
@@ -119,9 +118,8 @@ int main(int argc,char** argv){
     struct sockaddr_in saddr,caddr;
     socklen_t caddr_sz;
     const size_t max_buf=1024;
-    char sz_backlog[max_buf];
-    const char* lang;
-    char jp[max_buf],cm[max_buf],bp[max_buf],outn[max_buf],fn[max_buf],ip[max_buf],pt[max_buf],wt[max_buf];
+    const char* lang,*sz_backlog,*jp,*cm,*bp,*ip,*pt,*wt;
+    char outn[max_buf],fn[max_buf];
     pid_t pid;
     int32_t se,qid,jid=1;
     tdj_usec_t tm;
@@ -129,7 +127,7 @@ int main(int argc,char** argv){
     memset(&saddr,0,sizeof(saddr));
     saddr.sin_family=AF_INET;
     if(argc==2){
-        if(tdj_get_config(0,"my_server_ip",ip)==-1)
+        if((ip=tdj_get_config2(0,"my_server_ip"))==0)
             saddr.sin_addr.s_addr=htonl(INADDR_ANY);
         else
             saddr.sin_addr.s_addr=inet_addr(ip);
@@ -138,11 +136,11 @@ int main(int argc,char** argv){
         saddr.sin_addr.s_addr=inet_addr(argv[1]);
         saddr.sin_port=htons(atoi(argv[2]));
     }else if(argc==1){
-        if(tdj_get_config(0,"my_server_ip",ip)==-1)
+        if((ip=tdj_get_config2(0,"my_server_ip"))==0)
             saddr.sin_addr.s_addr=htonl(INADDR_ANY);
         else
             saddr.sin_addr.s_addr=inet_addr(ip);
-        if(tdj_get_config(0,"my_server_port",pt)==-1){
+        if((pt=tdj_get_config2(0,"my_server_port"))==0){
             printf("Usage: %s [IP] port",argv[0]);
             error_handling("");
         }
@@ -152,7 +150,7 @@ int main(int argc,char** argv){
         error_handling("");
     }
 
-    if(tdj_get_config(0,"server_wait_time",wt)==-1)
+    if((wt=tdj_get_config2(0,"server_wait_time"))==0)
         error_handling("Error: get config \"server_wait_time\" error");
     wait_time=atoi(wt);
     
@@ -163,7 +161,7 @@ int main(int argc,char** argv){
         error_handling("Error: bind() error");
     }
     
-    if(tdj_get_config(0,"backlog",sz_backlog)==-1){
+    if((sz_backlog=tdj_get_config2(0,"backlog"))==0){
         close(ssock);
         error_handling("Error: get config \"backlog\" error");
     }
@@ -225,11 +223,11 @@ int main(int argc,char** argv){
             lang="c++";
         else goto error_exit;
         
-        if(tdj_get_config(qid,"judge_data_path",jp)==-1)
+        if((jp=tdj_get_config2(qid,"judge_data_path"))==0)
             goto error_exit;
-        if(tdj_get_config(qid,"compare_method",cm)==-1)
+        if((cm=tdj_get_config2(qid,"compare_method"))==0)
             goto error_exit;
-        if(tdj_get_config(qid,"judge_build_path",bp)==-1)
+        if((bp=tdj_get_config2(qid,"judge_build_path"))==0)
             goto error_exit;
         sprintf(outn,"%s/%d.out",bp,getpid());
         if(tdj_compile(qid,infd(csock),lang,outn,0)==-1){

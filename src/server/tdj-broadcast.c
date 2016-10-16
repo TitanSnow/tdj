@@ -33,12 +33,11 @@ int has_dot(const char* p){
     return 0;
 }
 int main(int argc,char** argv){
-    const size_t max_buf=1024;
     int sock;
     struct sockaddr_in addr;
     int so_brd=1;
     int32_t buf[2];
-    char pt[max_buf];
+    const char *pt;
     int port=-1;
     memset(&addr,0,sizeof(addr));
     addr.sin_family=AF_INET;
@@ -70,7 +69,7 @@ int main(int argc,char** argv){
         return EXIT_FAILURE;
     }
     if(port==-1){
-        if(tdj_get_config(0,"my_server_port",pt)==-1){
+        if((pt=tdj_get_config2(0,"my_server_port"))==0){
             puts("Error: Incorrect server port");
             return EXIT_FAILURE;
         }

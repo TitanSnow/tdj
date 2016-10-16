@@ -31,12 +31,10 @@ void error_usage(const char* pn){
     printf("Usage: %s [problem id] key [value]\n",pn);
 }
 int main(int argc,char** argv){
-    const size_t max_buf=1024;
     int qid=0;
     char* key=0;
     char* value=0;
-    char dist[max_buf];
-    dist[0]='\0';
+    const char *dist;
     if(argc==2)
         key=argv[1];
     else if(argc==3){
@@ -65,7 +63,7 @@ int main(int argc,char** argv){
             return EXIT_FAILURE;
         }
     }else{
-        if(tdj_get_config(qid,key,dist)==-1){
+        if((dist=tdj_get_config2(qid,key))==0){
             puts("Error: undefined key");
             return EXIT_FAILURE;
         }

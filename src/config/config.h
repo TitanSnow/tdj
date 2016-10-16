@@ -23,6 +23,7 @@
 extern "C"{
 #endif
 int tdj_get_config(int qid,const char* key,char* dist);
+char* tdj_get_config2(int qid,const char* key);
 int tdj_set_config(int qid,const char* key,const char* value);
 #ifdef __cplusplus
 }

@@ -27,8 +27,7 @@
 #include<fcntl.h>
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
-    const size_t max_buf=1024;
-    char cp[max_buf];
+    const char *cp;
     int wstatus;
     int pipefd[2];
     struct sigaction sa;
@@ -49,8 +48,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
             return -1;
     }else{
         // child
-        cp[0]='\0';
-        if(tdj_get_config(qid,"compiler",cp)==-1) exit(-1);
+        if((cp=tdj_get_config2(qid,"compiler"))==0) exit(-1);
         if(dup2(fd,0)==-1) exit(-1);
         if(fd!=0)close(fd);
         close(pipefd[0]);
@@ -64,7 +62,8 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
 int tdj_judge(int qid,int did,const char* path,int *pstatus){
     pid_t pid;
     const size_t max_buf=1024;
-    char fn[max_buf],jp[max_buf],tl[max_buf],pp[max_buf];
+    char fn[max_buf],pp[max_buf];
+    const char *jp,*tl;
     int pipefd[2];
     int fd;
     int wstatus;
@@ -115,8 +114,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         }
         normal_run:;
         close(pipefd[1]);
-        tl[0]='\0';
-        if(tdj_get_config(qid,"time_limit",tl)==-1){
+        if((tl=tdj_get_config2(qid,"time_limit"))==0){
             if(pstatus)*pstatus=TDJ_TIMELIMITGETTINGERROR;
             goto error_exit;
         }
@@ -140,8 +138,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         return pipefd[0];
     }else{
         // child
-        jp[0]='\0';
-        if(tdj_get_config(qid,"judge_data_path",jp)==-1) exit(-1);
+        if((jp=tdj_get_config2(qid,"judge_data_path"))==0) exit(-1);
         sprintf(fn,"%s/%d/%d.in",jp,qid,did);
         fd=open(fn,O_RDONLY);
         if(fd==-1) exit(-1);

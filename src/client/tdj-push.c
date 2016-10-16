@@ -34,7 +34,7 @@
 #include"lib/zlib/zlib.h"
 int read_addr(const char** ip,const char** pt){
     static char nip[128],npt[128];
-    size_t max_buf=128;
+    const size_t max_buf=128;
     FILE* fl;
     int sock;
     struct sockaddr_in addr;
@@ -60,10 +60,10 @@ int read_addr(const char** ip,const char** pt){
         fclose(fl);
         return 0;
     }
-    if(tdj_get_config(0,"target_server_ip",nip)==-1) goto listen_broadcast;
-    else *ip=nip;
-    if(tdj_get_config(0,"target_server_port",npt)==-1) goto listen_broadcast;
-    else *pt=npt;
+    *ip=tdj_get_config2(0,"target_server_ip");
+    if(*ip==0) goto listen_broadcast;
+    *pt=tdj_get_config2(0,"target_server_port");
+    if(*pt==0) goto listen_broadcast;
     return 0;
 listen_broadcast:;
     if((sock=socket(PF_INET,SOCK_DGRAM,0))==-1)return -1;
@@ -185,8 +185,9 @@ int main(int argc,char** argv){
     const char* pt=0;
     const char* fn=0;
     const char* lg=0;
+    const char* cl;
     const size_t max_buf=1024;
-    char ft[max_buf],qd[max_buf],cl[max_buf];
+    char ft[max_buf],qd[max_buf];
     int qid;
     const char* dot=0;
     FILE* fl,*sfl;
@@ -257,7 +258,7 @@ int main(int argc,char** argv){
         return EXIT_FAILURE;
     }
     fwrite(frt,sizeof(int32_t),3,sfl);
-    if(tdj_get_config(qid,"compress_level",cl)==-1){
+    if((cl=tdj_get_config2(qid,"compress_level"))==0){
         close(sock);
         fclose(fl);
         puts("Error: cannot get \"compress_level\"");

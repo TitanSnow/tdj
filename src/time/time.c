@@ -25,7 +25,7 @@ tdj_usec_t tdj_time(){
     tdj_usec_t tm;
     if(clock_gettime(
 #ifdef CLOCK_REALTIME_COARSE
-        tdj_get_config(0,"high_precision_timer",0)==-1?CLOCK_REALTIME_COARSE:CLOCK_REALTIME
+        tdj_get_config2(0,"high_precision_timer")==0?CLOCK_REALTIME_COARSE:CLOCK_REALTIME
 #else
         CLOCK_REALTIME
 #endif
