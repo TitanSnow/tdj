@@ -133,8 +133,13 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
             if(pstatus)*pstatus=TDJ_WAITERROR;
             goto error_exit;
         }
-        if(!WIFEXITED(wstatus)||WEXITSTATUS(wstatus)!=0){
-            if(pstatus)*pstatus=TDJ_EXITERROR;
+        if(WIFEXITED(wstatus)){
+            if(WEXITSTATUS(wstatus)!=0){
+                if(pstatus)*pstatus=TDJ_EXITERROR;
+                return -1;
+            }
+        }else{
+            if(pstatus)*pstatus=TDJ_TERMINATEERROR;
             return -1;
         }
         return pipefd[0];

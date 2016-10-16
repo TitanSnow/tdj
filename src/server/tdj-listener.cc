@@ -93,6 +93,9 @@ int main(){
                     case TDJ_EXITERROR:
                         printf("%12s","EE");
                         break;
+                    case TDJ_TERMINATEERROR:
+                        printf("%12s","RE");
+                        break;
                     default:
                         printf("%12s","JE");
                         break;

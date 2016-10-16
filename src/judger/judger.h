@@ -42,4 +42,5 @@ void tdj_void_signal_handler(int sig);
 #define TDJ_OPENNULLERROR 10
 #define TDJ_DUPERROR 11
 #define TDJ_SIGERROR 12
+#define TDJ_TERMINATEERROR 13
 #endif
