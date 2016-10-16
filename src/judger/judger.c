@@ -26,6 +26,7 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
+#include<sys/resource.h>
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const char *cp;
@@ -62,7 +63,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
 }
 int tdj_judge(int qid,int did,const char* path,int *pstatus){
     pid_t pid;
-    const char *jp,*tl,*fn,*pp;
+    const char *jp,*tl,*fn,*pp,*rl;
     int pipefd[2];
     int fd;
     int wstatus;
@@ -70,6 +71,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
     int t;
     FILE* pf;
     char ts;
+    struct rlimit rlm;
     if(pstatus)*pstatus=TDJ_JUDGESUCCESS;
     struct sigaction sa;
     if(sigaction(SIGCHLD,0,&sa)==-1){
@@ -152,6 +154,18 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         if(fd==-1) exit(-1);
         if(dup2(fd,2)==-1) exit(-1);
         close(fd);
+        if((rl=tdj_get_config2(qid,"rlimit_as"))!=0){
+            rlm.rlim_cur=rlm.rlim_max=atoi(rl);
+            setrlimit(RLIMIT_AS,&rlm);
+        }
+        if((rl=tdj_get_config2(qid,"rlimit_core"))!=0){
+            rlm.rlim_cur=rlm.rlim_max=atoi(rl);
+            setrlimit(RLIMIT_CORE,&rlm);
+        }
+        if((rl=tdj_get_config2(qid,"time_limit"))!=0){
+            rlm.rlim_cur=rlm.rlim_max=(atoi(rl)+999999)/1000000;
+            setrlimit(RLIMIT_CPU,&rlm);
+        }
         execlp(path,path,NULL);
         exit(-1);
     }

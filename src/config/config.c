@@ -29,7 +29,7 @@ int make_sure(){
     int nRow,i;
     char **result,*query;
     const char* default_config[]={
-        "judge_data_path","judge_data","time_limit","1000000","compiler","c++","compare_method","lesser","judge_build_path","judge_build","backlog","64","server_wait_time","0","compress_level","-1","high_precision_timer","",0
+        "judge_data_path","judge_data","time_limit","1000000","compiler","c++","compare_method","lesser","judge_build_path","judge_build","backlog","64","server_wait_time","0","compress_level","-1","high_precision_timer","","rlimit_as","134217728","rlimit_core","0",0
     };
     
     if(sqlite3_get_table(db,"select * from sqlite_master where type='table' and name='config' limit 1",&result,&nRow,0,0)!=SQLITE_OK)return -1;
