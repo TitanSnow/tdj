@@ -65,7 +65,7 @@ char* _get_storehouse(int flag,size_t len){
         lmap=0;
         return 0;
     }
-    rmap=realloc(rmap,++lmap);
+    rmap=realloc(rmap,(++lmap)*sizeof(char*));
     if(rmap==0){
         lmap=0;
         return 0;
