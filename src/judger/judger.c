@@ -26,7 +26,6 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
-#include<sys/resource.h>
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const char *cp;
@@ -61,7 +60,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
         exit(-1);
     }
 }
-int tdj_judge(int qid,int did,const char* path,int *pstatus){
+int tdj_judge6(int qid,int did,const char* path,int *pstatus,int *pwstatus,struct rusage *usage){
     pid_t pid;
     const char *jp,*tl,*fn,*pp,*rl;
     int pipefd[2];
@@ -107,7 +106,8 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
                     kill(pid,SIGKILL);
                     // No break;
                 case 'Z':
-                    waitpid(pid,&wstatus,0);
+                    wait4(pid,&wstatus,0,usage);
+                    if(pwstatus)*pwstatus=wstatus;
                     // No break;
                 case 'D':case 'X':default:
                     fclose(pf);
@@ -125,7 +125,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
             // if(pstatus)*pstatus=TDJ_USLEEPERROR;
             // goto error_exit;
         }
-        if((t=waitpid(pid,&wstatus,WNOHANG))==0){
+        if((t=wait4(pid,&wstatus,WNOHANG,usage))==0){
             if(pstatus)*pstatus=TDJ_STILLRUNNINGERROR;
             goto error_exit;
         }
@@ -133,6 +133,7 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
             if(pstatus)*pstatus=TDJ_WAITERROR;
             goto error_exit;
         }
+        if(pwstatus)*pwstatus=wstatus;
         if(WIFEXITED(wstatus)){
             if(WEXITSTATUS(wstatus)!=0){
                 if(pstatus)*pstatus=TDJ_EXITERROR;
@@ -174,5 +175,8 @@ int tdj_judge(int qid,int did,const char* path,int *pstatus){
         execlp(path,path,NULL);
         exit(-1);
     }
+}
+int tdj_judge(int qid,int did,const char* path,int *pstatus){
+    return tdj_judge6(qid,did,path,pstatus,0,0);
 }
 void tdj_void_signal_handler(int sig){}

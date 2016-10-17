@@ -18,6 +18,7 @@
 */
 
 #include<signal.h>
+#include<sys/resource.h>
 #ifndef TDJ_JUDGER_H
 #define TDJ_JUDGER_H
 #ifdef __cplusplus
@@ -25,6 +26,7 @@ extern "C"{
 #endif
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd);
 int tdj_judge(int qid,int did,const char* path,int *pstatus);
+int tdj_judge6(int qid,int did,const char* path,int *pstatus,int *pwstatus,struct rusage *usage);
 void tdj_void_signal_handler(int sig);
 #ifdef __cplusplus
 }
