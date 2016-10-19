@@ -75,4 +75,9 @@ prepare:
 	-mkdir bin
 install:
 	cp bin/* /usr/bin
-.PHONY: all clean prepare install
+reset:
+	-rm -r bin
+	-rm -r build
+	-rm lib/sqlite/config.h
+	make -Clib/zlib -fMakefile.in distclean
+.PHONY: all clean prepare install reset
