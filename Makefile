@@ -55,8 +55,10 @@ build/sql.o: src/config/sql.c lib/sqlite/sqlite3.h
 build/libconfig.a: build/config.o build/sql.o build/sqlite3.o
 	ar rc build/libconfig.a build/config.o build/sql.o build/sqlite3.o
 
-lib/zlib/libz.a: lib/zlib/configure
-	cd lib/zlib;./configure --static;make libz.a;cd ../..
+lib/zlib/Makefile: lib/zlib/configure
+	cd lib/zlib;./configure --static;cd ../..
+lib/zlib/libz.a: lib/zlib/Makefile
+	make -Clib/zlib libz.a
 build/libz.a: lib/zlib/libz.a build/zpipe.o
 	cp lib/zlib/libz.a build
 	ar r build/libz.a build/zpipe.o
