@@ -26,6 +26,35 @@
 #include<unistd.h>
 #include<sys/wait.h>
 #include<fcntl.h>
+#include<dirent.h>
+#include<sys/select.h>
+#include<ctype.h>
+int isnum(const char *st){
+    for(;*st!='\0';++st)
+        if(!isdigit(*st)) return 0;
+    return 1;
+}
+void close_gt2(){
+    DIR *dp;
+    struct dirent *dirp;
+    fd_set fds;
+    int max,i,t;
+
+    if((dp=opendir("/dev/fd"))==NULL) return;
+    FD_ZERO(&fds);
+    max=0;
+    while((dirp=readdir(dp))!=NULL)
+        if(isnum(dirp->d_name)){
+            t=atoi(dirp->d_name);
+            FD_SET(t,&fds);
+            if(t>max) max=t;
+        }
+    closedir(dp);
+
+    for(i=3;i<=max;++i)
+        if(FD_ISSET(i,&fds))
+            close(i);
+}
 int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
     pid_t pid;
     const char *cp;
@@ -56,6 +85,7 @@ int tdj_compile(int qid,int fd,const char* lang,const char* path,int* pcpfd){
         if(dup2(pipefd[1],1)==-1) exit(-1);
         if(dup2(pipefd[1],2)==-1) exit(-1);
         close(pipefd[1]);
+        close_gt2();
         execlp(cp,cp,"-x",lang,"-","-o",path,NULL);
         exit(-1);
     }
@@ -172,6 +202,11 @@ int tdj_judge6(int qid,int did,const char* path,int *pstatus,int *pwstatus,struc
             rlm.rlim_cur=rlm.rlim_max=(atoi(rl)+999999)/1000000;
             setrlimit(RLIMIT_CPU,&rlm);
         }
+        if((rl=tdj_get_config2(qid,"rlimit_nofile"))!=0){
+            close_gt2();
+            rlm.rlim_cur=rlm.rlim_max=atoi(rl);
+            setrlimit(RLIMIT_NOFILE,&rlm);
+        }else close_gt2();
         execlp(path,path,NULL);
         exit(-1);
     }

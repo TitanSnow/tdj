@@ -57,7 +57,6 @@ int get_localsock(int* pport){
     }
     if(pport!=0)
         *pport=port;
-    fcntl(sock,F_SETFD,FD_CLOEXEC);
     return sock;
 }
 void send_mes(int fd,int32_t ver,int32_t jid,int32_t mstat,int32_t jstat,tdj_usec_t tm){
@@ -108,7 +107,6 @@ int infd(int fd){
     // parent
     close(pipefd[1]);
     waitpid(pid,0,0);
-    fcntl(pipefd[0],FD_CLOEXEC);
     return pipefd[0];
 }
 int main(int argc,char** argv){
@@ -208,7 +206,6 @@ int main(int argc,char** argv){
         }
         normal_run:;
         close(ssock);
-        fcntl(csock,F_SETFD,FD_CLOEXEC);
         signal(SIGCHLD,tdj_void_signal_handler);
         if(read_count(csock,(char*)&se,sizeof(se))!=0) goto error_exit;
         if(se!=TDJ_VERSION)
